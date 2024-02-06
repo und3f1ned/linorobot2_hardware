@@ -16,29 +16,12 @@
 #define DEFAULT_MOTOR
 
 #include <Arduino.h>
-#ifdef ESP32
-#include <ESP32Servo.h>
-#else
-#include <Servo.h>
-#endif
 #include "config.h"
-#ifdef ESP32
-inline void analogWriteFrequency(uint8_t pin, double frequency)
-{
-  analogWriteFrequency(frequency);
-}
-#elif defined(PICO)
-inline void analogWriteFrequency(double frequency)
-{
-  analogWriteFreq(frequency);
-}
-inline void analogWriteFrequency(uint8_t pin, double frequency)
-{
-  analogWriteFreq(frequency);
-}
-#endif
-
+#include "pwm.h"
 #include "motor_interface.h"
+#ifndef PCA_BASE
+#define PCA_BASE 100
+#endif
 
 class Generic2: public MotorInterface
 {
@@ -46,53 +29,57 @@ class Generic2: public MotorInterface
         int in_a_pin_;
         int in_b_pin_;
         int pwm_pin_;
+        float pwm_frequency_;
 
     protected:
         void forward(int pwm) override
         {
             if (in_a_pin_ < 0) return;
-            digitalWrite(in_a_pin_, HIGH);
-            digitalWrite(in_b_pin_, LOW);
-            analogWrite(pwm_pin_, abs(pwm));
+            setLevel(in_a_pin_, HIGH);
+            setLevel(in_b_pin_, LOW);
+            setPin(pwm_pin_, abs(pwm));
         }
 
         void reverse(int pwm) override
         {
-	    if (in_a_pin_ < 0) return;
-            digitalWrite(in_a_pin_, LOW);
-            digitalWrite(in_b_pin_, HIGH);
-            analogWrite(pwm_pin_, abs(pwm));
+	        if (in_a_pin_ < 0) return;
+            setLevel(in_a_pin_, LOW);
+            setLevel(in_b_pin_, HIGH);
+            setPin(pwm_pin_, abs(pwm));
         }
 
     public:
-        Generic2(float pwm_frequency, int pwm_bits, bool invert, int pwm_pin, int in_a_pin, int in_b_pin): 
+        Generic2(float pwm_frequency, int pwm_bits, bool invert, int pwm_pin, int in_a_pin, int in_b_pin):
             MotorInterface(invert),
+            pwm_frequency_(pwm_frequency),
             in_a_pin_(in_a_pin),
             in_b_pin_(in_b_pin),
-            pwm_pin_(pwm_pin)
-        {
-	    if (in_a_pin_ < 0) return;
-            pinMode(in_a_pin_, OUTPUT);
-            pinMode(in_b_pin_, OUTPUT);
-            pinMode(pwm_pin_, OUTPUT);
+            pwm_pin_(pwm_pin) {}
 
-            if(pwm_frequency > 0)
-            {
-                analogWriteFrequency(pwm_pin_, pwm_frequency);
+        void begin()
+        {
+	        if (in_a_pin_ < 0) return;
+            if (in_a_pin_ < PCA_BASE) {
+                pinMode(in_a_pin_, OUTPUT);
+                pinMode(in_b_pin_, OUTPUT);
+                pinMode(pwm_pin_, OUTPUT);
+#ifdef TEENSYDUINO
+                if(pwm_frequency_ > 0)
+                    analogWriteFrequency(pwm_pin_, pwm_frequency_);
+#endif
             }
-            analogWriteResolution(pwm_bits);
 
             //ensure that the motor is in neutral state during bootup
-            analogWrite(pwm_pin_, abs(0));
+            setPin(pwm_pin_, abs(0));
         }
 
         void brake() override
         {
-	    if (in_a_pin_ < 0) return;
-            analogWrite(pwm_pin_, 0);
+	        if (in_a_pin_ < 0) return;
+            setPin(pwm_pin_, 0);
 #ifdef USE_SHORT_BRAKE
-            digitalWrite(in_a_pin_, HIGH); // short brake
-            digitalWrite(in_b_pin_, HIGH);
+            setLevel(in_a_pin_, HIGH); // short brake
+            setLevel(in_b_pin_, HIGH);
 #endif
         }
 };
@@ -102,46 +89,50 @@ class Generic1: public MotorInterface
     private:
         int in_pin_;
         int pwm_pin_;
+        float pwm_frequency_;
 
     protected:
         void forward(int pwm) override
         {
 	    if (in_pin_ < 0) return;
-            digitalWrite(in_pin_, HIGH);
-            analogWrite(pwm_pin_, abs(pwm));
+            setLevel(in_pin_, HIGH);
+            setPin(pwm_pin_, abs(pwm));
         }
 
         void reverse(int pwm) override
         {
 	    if (in_pin_ < 0) return;
-            digitalWrite(in_pin_, LOW);
-            analogWrite(pwm_pin_, abs(pwm));
+            setLevel(in_pin_, LOW);
+            setPin(pwm_pin_, abs(pwm));
         }
 
     public:
-        Generic1(float pwm_frequency, int pwm_bits, bool invert, int pwm_pin, int in_pin, int unused=-1): 
+        Generic1(float pwm_frequency, int pwm_bits, bool invert, int pwm_pin, int in_pin, int unused=-1):
             MotorInterface(invert),
+            pwm_frequency_(pwm_frequency),
             in_pin_(in_pin),
-            pwm_pin_(pwm_pin)
-        {
-	    if (in_pin_ < 0) return;
-            pinMode(in_pin_, OUTPUT);
-            pinMode(pwm_pin_, OUTPUT);
+            pwm_pin_(pwm_pin) {}
 
-            if(pwm_frequency > 0)
-            {
-                analogWriteFrequency(pwm_pin_, pwm_frequency);
+        void begin()
+        {
+	        if (in_pin_ < 0) return;
+            if (in_pin_ < PCA_BASE) {
+                pinMode(in_pin_, OUTPUT);
+                pinMode(pwm_pin_, OUTPUT);
+#ifdef TEENSYDUINO
+                if(pwm_frequency_ > 0)
+                    analogWriteFrequency(pwm_pin_, pwm_frequency_);
+#endif
             }
-            analogWriteResolution(pwm_bits);
 
             //ensure that the motor is in neutral state during bootup
-            analogWrite(pwm_pin_, abs(0));
+            setPin(pwm_pin_, abs(0));
         }
 
         void brake() override
         {
 	    if (in_pin_ < 0) return;
-            analogWrite(pwm_pin_, 0);
+            setPin(pwm_pin_, 0);
         }
 };
 
@@ -150,89 +141,79 @@ class BTS7960: public MotorInterface
     private:
         int in_a_pin_;
         int in_b_pin_;
+        int pwm_bits_;
         int pwm_max_;
+        float pwm_frequency_;
 
     protected:
         void forward(int pwm) override
         {
-	    if (in_a_pin_ < 0) return;
+	        if (in_a_pin_ < 0) return;
 #ifdef USE_SHORT_BRAKE
-            analogWrite(in_a_pin_, pwm_max_ - abs(pwm));
-            analogWrite(in_b_pin_, pwm_max_); // short brake
+            setPin(in_a_pin_, pwm_max_ - abs(pwm));
+            setPin(in_b_pin_, pwm_max_); // short brake
 #else
-            analogWrite(in_a_pin_, 0);
-            analogWrite(in_b_pin_, abs(pwm));
+            setPin(in_a_pin_, 0);
+            setPin(in_b_pin_, abs(pwm));
 #endif
         }
 
         void reverse(int pwm) override
         {
-	    if (in_a_pin_ < 0) return;
+	        if (in_a_pin_ < 0) return;
 #ifdef USE_SHORT_BRAKE
-            analogWrite(in_b_pin_, pwm_max_ - abs(pwm));
-            analogWrite(in_a_pin_, pwm_max_); // short brake
+            setPin(in_b_pin_, pwm_max_ - abs(pwm));
+            setPin(in_a_pin_, pwm_max_); // short brake
 #else
-            analogWrite(in_b_pin_, 0);
-            analogWrite(in_a_pin_, abs(pwm));
+            setPin(in_b_pin_, 0);
+            setPin(in_a_pin_, abs(pwm));
 #endif
         }
 
     public:
-        BTS7960(float pwm_frequency, int pwm_bits, bool invert, int unused, int in_a_pin, int in_b_pin): 
+        BTS7960(float pwm_frequency, int pwm_bits, bool invert, int unused, int in_a_pin, int in_b_pin):
             MotorInterface(invert),
+            pwm_frequency_(pwm_frequency),
+            pwm_bits_(pwm_bits),
             in_a_pin_(in_a_pin),
-            in_b_pin_(in_b_pin)
+            in_b_pin_(in_b_pin) {}
+
+        void begin()
         {
-	    if (in_a_pin_ < 0) return;
-            pwm_max_ = (1 << pwm_bits) - 1;
-            pinMode(in_a_pin_, OUTPUT);
-            pinMode(in_b_pin_, OUTPUT);
-
-            if(pwm_frequency > 0)
-            {
-                analogWriteFrequency(in_a_pin_, pwm_frequency);
-                analogWriteFrequency(in_b_pin_, pwm_frequency);
-
+	        if (in_a_pin_ < 0) return;
+            pwm_max_ = (1 << pwm_bits_) - 1;
+            if (in_a_pin_ < PCA_BASE) {
+                pinMode(in_a_pin_, OUTPUT);
+                pinMode(in_b_pin_, OUTPUT);
+#ifdef TEENSYDUINO
+                if(pwm_frequency_ > 0) {
+                    analogWriteFrequency(in_a_pin_, pwm_frequency_);
+                    analogWriteFrequency(in_b_pin_, pwm_frequency_);
+                }
+#endif
             }
-            analogWriteResolution(pwm_bits);
 
             //ensure that the motor is in neutral state during bootup
-            analogWrite(in_a_pin_, 0);
-            analogWrite(in_b_pin_, 0);
+            setPin(in_a_pin_, 0);
+            setPin(in_b_pin_, 0);
         }
-    
-        BTS7960(float pwm_frequency, int pwm_bits, bool invert, int in_a_pin, int in_b_pin): 
+
+        BTS7960(float pwm_frequency, int pwm_bits, bool invert, int in_a_pin, int in_b_pin):
             MotorInterface(invert),
+            pwm_frequency_(pwm_frequency),
+            pwm_bits_(pwm_bits),
             in_a_pin_(in_a_pin),
-            in_b_pin_(in_b_pin)
-        {
-	    if (in_a_pin_ < 0) return;
-            pwm_max_ = (1 << pwm_bits) - 1;
-            pinMode(in_a_pin_, OUTPUT);
-            pinMode(in_b_pin_, OUTPUT);
-
-            if(pwm_frequency > 0)
-            {
-                analogWriteFrequency(in_a_pin_, pwm_frequency);
-                analogWriteFrequency(in_b_pin_, pwm_frequency);
-
-            }
-            analogWriteResolution(pwm_bits);
-
-            //ensure that the motor is in neutral state during bootup
-            analogWrite(in_a_pin_, 0);
-            analogWrite(in_b_pin_, 0);
-        }
+            in_b_pin_(in_b_pin) {}
 
         void brake() override
         {
 	    if (in_a_pin_ < 0) return;
 #ifdef USE_SHORT_BRAKE
-            analogWrite(in_a_pin_, pwm_max_);
-            analogWrite(in_b_pin_, pwm_max_); // short brake
+            setPin(in_a_pin_, pwm_max_);
+            setPin(in_b_pin_, pwm_max_); // short brake
 #else
-            analogWrite(in_b_pin_, 0);
-            analogWrite(in_a_pin_, 0);            
+            setPin(in_b_pin_, 0);
+            setPin(in_a_pin_, 0);
 #endif
         }
 };
@@ -240,38 +221,46 @@ class BTS7960: public MotorInterface
 class ESC: public MotorInterface
 {
     private:
-        Servo motor_;
         int pwm_pin_;
-
+        float pwm_frequency_;
     protected:
         void forward(int pwm) override
         {
-	    if (pwm_pin_ < 0) return;
-            motor_.writeMicroseconds(1500 + pwm);
+	        if (pwm_pin_ < 0) return;
+            setPulse(pwm_pin_, 1500 + pwm);
         }
 
         void reverse(int pwm) override
         {
 	    if (pwm_pin_ < 0) return;
-            motor_.writeMicroseconds(1500 + pwm);
+            setPulse(pwm_pin_, 1500 + pwm);
         }
 
     public:
-        ESC(float pwm_frequency, int pwm_bits, bool invert, int pwm_pin, int unused=-1, int unused2=-1): 
+        ESC(float pwm_frequency, int pwm_bits, bool invert, int pwm_pin, int unused=-1, int unused2=-1):
             MotorInterface(invert),
-            pwm_pin_(pwm_pin)
+            pwm_frequency_(pwm_frequency),
+            pwm_pin_(pwm_pin) {}
+
+        void begin()
         {
-	    if (pwm_pin_ < 0) return;
-            motor_.attach(pwm_pin);
-            
+	        if (pwm_pin_ < 0) return;
+            if (pwm_pin_ < PCA_BASE) {
+                pinMode(pwm_pin_, OUTPUT);
+#ifdef TEENSYDUINO
+                if(pwm_frequency_ > 0)
+                    analogWriteFrequency(pwm_pin_, pwm_frequency_);
+#endif
+            }
+
             //ensure that the motor is in neutral state during bootup
-            motor_.writeMicroseconds(1500);
+            setPulse(pwm_pin_, 1500);
         }
 
         void brake() override
         {
-	    if (pwm_pin_ < 0) return;
-            motor_.writeMicroseconds(1500);         
+	        if (pwm_pin_ < 0) return;
+            setPulse(pwm_pin_, 1500);
         }
 };
 

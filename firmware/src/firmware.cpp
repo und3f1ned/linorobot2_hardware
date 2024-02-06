@@ -44,6 +44,7 @@
 #include "lidar.h"
 #include "wifis.h"
 #include "ota.h"
+#include "pwm.h"
 
 #ifdef WDT_TIMEOUT
 #include <esp_task_wdt.h>
@@ -495,10 +496,17 @@ void setup()
     Wire.setSCL(SCL_PIN);
 #endif
 #endif
+
 #ifdef WDT_TIMEOUT
     esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
     esp_task_wdt_add(NULL); //add current thread to WDT watch
 #endif
+    initPwm();
+    motor1_controller.begin();
+    motor2_controller.begin();
+    motor3_controller.begin();
+    motor4_controller.begin();
+
     initWifis();
     initOta();
 

@@ -39,6 +39,7 @@
 #include "lidar.h"
 #include "wifis.h"
 #include "ota.h"
+#include "pwm.h"
 
 #ifndef BAUDRATE
 #define BAUDRATE 115200
@@ -55,7 +56,7 @@ Odometry odometry;
 IMU imu;
 MAG mag;
 
-void setup() 
+void setup()
 {
 #ifdef BOARD_INIT // board specific setup
     BOARD_INIT;
@@ -71,6 +72,12 @@ void setup()
     Wire.setSCL(SCL_PIN);
 #endif
 #endif
+    initPwm();
+    motor1_controller.begin();
+    motor2_controller.begin();
+    motor3_controller.begin();
+    motor4_controller.begin();
+
     initWifis();
     initOta();
 

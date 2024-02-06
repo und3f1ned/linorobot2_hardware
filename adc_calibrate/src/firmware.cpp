@@ -47,6 +47,7 @@
 #include "lidar.h"
 #include "wifis.h"
 #include "ota.h"
+#include "pwm.h"
 
 #ifdef WDT_TIMEOUT
 #include <esp_task_wdt.h>
