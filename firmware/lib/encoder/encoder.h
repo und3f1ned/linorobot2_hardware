@@ -5,17 +5,17 @@
  * Version 1.2 - fix -2 bug in C-only code
  * Version 1.1 - expand to support boards with up to 60 interrupts
  * Version 1.0 - initial release
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,9 +28,9 @@
 
 #ifndef Encoder_h_
 #define Encoder_h_
+#include "Arduino.h"
 
 #ifdef ESP32
-#include "Arduino.h"
 #include <ESP32Encoder.h>
 class Encoder
 {
@@ -79,33 +79,23 @@ public:
 	}
 };
 #elif defined(PICO)
-#include <Arduino.h>
-#include "pico/stdlib.h"
-#include "hardware/pio.h"
-#include "quadrature.pio.h"
-PIO pio = pio0;
+#include <pio_encoder.h>
 
 class Encoder
 {
 private:
 	int counts_per_rev_ = -1;
 	unsigned long prev_update_time_;
-        int32_t prev_encoder_ticks_;
-        uint offset_;
-        uint sm_;
+    int32_t prev_encoder_ticks_;
+    uint offset_;
+  	PioEncoder pioencoder_;
 public:
-	Encoder(int pin1, int pin2, int counts_per_rev, bool invert = false) {
-		int temp_pin = pin1;
+	Encoder(int pin1, int pin2, int counts_per_rev, bool invert = false) : \
+		pioencoder_(pin1) {
 		if (pin1 < 0 || pin2 < 0) return; // unused encoder
-		if(invert)
-		{
-			pin1 = pin2;
-			pin2 = temp_pin;
-		}
+		pioencoder_.begin();
+		pioencoder_.flip(invert);
 		counts_per_rev_ = counts_per_rev;
-		offset_ = pio_add_program(pio, &quadrature_program);
-                sm_ = pio_claim_unused_sm(pio, true);
-		quadrature_program_init(pio, sm_, offset_, pin1, pin2);
  	}
 	float getRPM() {
 	        if (counts_per_rev_ < 0) return 0.0;
@@ -125,14 +115,12 @@ public:
 		return (((double) delta_ticks / counts_per_rev_) / dtm);
 	}
 	inline int32_t read() {
-	        if (counts_per_rev_ < 0) return 0;
-		pio_sm_exec_wait_blocking(pio, sm_, pio_encode_in(pio_x, 32));
-		return pio_sm_get_blocking(pio, sm_);
+	    if (counts_per_rev_ < 0) return 0;
+		return pioencoder_.getCount();
 	}
-        inline void write(int32_t p) {
-	        if (counts_per_rev_ < 0) return;
-		pio_sm_exec(pio, sm_, pio_encode_set(pio_x, p));
-	        // encoder_.setCount(p);
+    inline void write(int32_t p) {
+		if (counts_per_rev_ < 0) return;
+		pioencoder_.reset();
 	}
 };
 #else
@@ -201,7 +189,7 @@ public:
 		digitalWrite(pin2, HIGH);
 		#endif
 
-		counts_per_rev_ = counts_per_rev;	
+		counts_per_rev_ = counts_per_rev;
 
 		encoder.pin1_register = PIN_TO_BASEREG(pin1);
 		encoder.pin1_bitmask = PIN_TO_BITMASK(pin1);
@@ -296,7 +284,7 @@ private:
 public:
 	static Encoder_internal_state_t * interruptArgs[ENCODER_ARGLIST_SIZE];
 
-//                           _______         _______       
+//                           _______         _______
 //               Pin1 ______|       |_______|       |______ Pin1
 // negative <---         _______         _______         __      --> positive
 //               Pin2 __|       |_______|       |_______|   Pin2
