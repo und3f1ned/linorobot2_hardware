@@ -5,6 +5,7 @@ This is a fork of the [linorobot/linorobot2_hardware](https://github.com/linorob
 ## Supported micro-controllers
 
 - [teensy](https://www.pjrc.com/teensy/) - the original micro-controller supported in the linorobot/linorobot_hardware project. The teensy dose not support WIFI.
+- [pico](https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html) - The pico does not support micro-ROS WIFI transport.
 - [esp32](https://en.wikipedia.org/wiki/ESP32) - support added in this fork. There are many variants. The RISC-V variant esp32-c3 does not support PCNT (hardware pulse counters), which is needed for encoders. So the esp32-c3 is not recommended.
 
 You will need to specify the [board variant](https://docs.platformio.org/en/latest/boards/index.html#espressif-32) in the project configuration file linorobot2_hardware/firmware/platformio.ini.
@@ -45,10 +46,12 @@ The 2 PWM pins driver is recommended for esp32 to reduce the number of I/O pins 
 
 - IMU - GY85, MPU6050, MPU9150, MPU9250, QMI8658.
 - compass - HMC5883L, AK8963, AK 8975, AK09918, QMC5883L.
-- encoder - PCNT (hardware pulse counter on esp32), interrupt driven
+- encoder - PCNT (hardware pulse counter on esp32), PIO on pico, interrupt driven
 - battery - on-chip ADC, INA219
 - ultrasonic - HC-SR04
 - lidar - ldlidar LD19/D300
+
+The IMU and compass senors are directional. They must be mounted in correct orientation.
 
 ## Configuration examples
 
@@ -56,6 +59,8 @@ The firmware is configured with a configuration file in the linorobot2_hardware/
 
 - gendrv_config.h - 2WD, [waveshare general driver for robots](https://www.waveshare.com/general-driver-for-robots.htm) is an all-in-one esp32 board. It can save some work if you are new to esp32 and hardware stuff.
 - esp32_config.h - 2WD, esp32 dev board and MPU6050.
+- pico_config.h - 2WD, pico and MPU6050.
+- pico_zio_config.h - Mecanum, pico, MPU6050 and Zio Qwiic 4 DC Motor Controller.
 
 ## Quick start
 
@@ -104,7 +109,9 @@ The serial monitor will print the IP of esp32 (here 192.168.1.101) after connect
     WIFI connected
     IP address: 192.168.1.101
 
-The LED on the esp32 dev board may flash three times per second, that means the IMU (MPU6050) is not detected. Add the IMU, then the it will try to connect to the [micro-ROS agent](https://github.com/micro-ROS/micro_ros_setup?tab=readme-ov-file#building-micro-ros-agent) with wifi transport.
+The LED on the esp32 dev board may flash three times per second, that means the IMU (MPU6050) is not detected.
+Add the IMU or comment out the USE_MPU6050_IMU line in the configuration file, then the it will try to connect to the
+[micro-ROS agent](https://github.com/micro-ROS/micro_ros_setup?tab=readme-ov-file#building-micro-ros-agent) with wifi transport.
 
     # Run a micro-ROS agent
     ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
