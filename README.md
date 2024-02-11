@@ -60,9 +60,14 @@ The firmware is configured with a configuration file in the linorobot2_hardware/
 - gendrv_config.h - 2WD, [waveshare general driver for robots](https://www.waveshare.com/general-driver-for-robots.htm) is an all-in-one esp32 board. It can save some work if you are new to esp32 and hardware stuff.
 - esp32_config.h - 2WD, esp32 dev board and MPU6050.
 - pico_config.h - 2WD, pico and MPU6050.
-- pico_zio_config.h - Mecanum, pico, MPU6050 and Zio Qwiic 4 DC Motor Controller.
+- pico_zio_config.h - Mecanum, pico, MPU6050 and PCA9685 i2c pwm based Zio Qwiic 4 DC Motor Controller.
 
 ## Quick start
+
+Install [ROS2](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html) and source the ROS2 setup. Or add it to .bashrc, like this,
+
+    echo "source /opt/ros/humble/setup.bash" >> $HOME/.bashrc
+    source $HOME/.bashrc
 
 Install essential build tools. Remove brltty package which interferes with CH340 USB serial on some esp32 boards.
 
@@ -74,7 +79,7 @@ Install [PlatformIO IDE for VSCode](https://platformio.org/install/ide?install=v
     curl -fsSL -o get-platformio.py https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py
     python3 get-platformio.py
 
-Add platformio to $PATH in ~/.bashrc or ~/.profile .
+Add platformio to $PATH in .bashrc.
 
     echo "PATH=\"\$PATH:\$HOME/.platformio/penv/bin\"" >> $HOME/.bashrc
     source $HOME/.bashrc
