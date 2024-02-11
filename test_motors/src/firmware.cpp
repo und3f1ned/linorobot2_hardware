@@ -121,6 +121,10 @@ void setup()
     motor2_encoder.getRPM();
     motor3_encoder.getRPM();
     motor4_encoder.getRPM();
+
+#ifdef BOARD_INIT_LATE // board specific setup
+    BOARD_INIT_LATE;
+#endif
 }
 
 void loop() {

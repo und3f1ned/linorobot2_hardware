@@ -531,6 +531,10 @@ void setup()
 #else
     set_microros_serial_transports(Serial);
 #endif
+
+#ifdef BOARD_INIT_LATE // board specific setup
+    BOARD_INIT_LATE;
+#endif
     syslog(LOG_INFO, "%s Ready %lu", __FUNCTION__, millis());
 }
 

@@ -73,11 +73,6 @@ void setup()
 #endif
 #endif
     initPwm();
-    motor1_controller.begin();
-    motor2_controller.begin();
-    motor3_controller.begin();
-    motor4_controller.begin();
-
     initWifis();
     initOta();
 
