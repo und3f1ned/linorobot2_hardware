@@ -64,10 +64,9 @@ The firmware is configured with a configuration file in the linorobot2_hardware/
 
 ## Quick start
 
-Install [ROS2](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html) and source the ROS2 setup. Or add it to .bashrc, like this,
-
-    echo "source /opt/ros/humble/setup.bash" >> $HOME/.bashrc
-    source $HOME/.bashrc
+Install [ROS2](https://github.com/hippo5329/linorobot2_hardware/wiki#install-ros2) and
+[linorobot2](https://github.com/hippo5329/linorobot2_hardware/wiki#install-hippo5329linorobot2).
+Make sure the ROS2 setup is sourced.
 
 Install essential build tools. Remove brltty package which interferes with CH340 USB serial on some esp32 boards.
 
