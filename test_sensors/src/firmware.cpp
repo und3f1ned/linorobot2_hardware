@@ -94,7 +94,7 @@ void loop() {
 #endif
     battery_msg = getBattery();
     range_msg = getRange();
-    printf("ACC %5.2f %5.2f %5.2f GYR %5.2f %5.2f %5.2f MAG %5.2f %5.2f %5.2f\n"
+    Serial.printf("ACC %5.2f %5.2f %5.2f GYR %5.2f %5.2f %5.2f MAG %5.2f %5.2f %5.2f\n"
 	   " BAT %5.2fV RANGE %5.2fm\n",
 	   imu_msg.linear_acceleration.x, imu_msg.linear_acceleration.y, imu_msg.linear_acceleration.z,
 	   imu_msg.angular_velocity.x, imu_msg.angular_velocity.y, imu_msg.angular_velocity.x,

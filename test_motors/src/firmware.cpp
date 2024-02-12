@@ -159,12 +159,12 @@ void loop() {
     if (tk && tk % run_time == 0) {
         Kinematics::velocities max_linear = kinematics.getVelocities(max_rpm, max_rpm, max_rpm, max_rpm);
 	Kinematics::velocities max_angular = kinematics.getVelocities(-max_rpm, max_rpm,-max_rpm, max_rpm);
-	printf("MOTOR%d SPEED %6.2f m/s %6.2f rad/s STOP %6.3f m\n", current_motor ? current_motor : total_motors,
+	Serial.printf("MOTOR%d SPEED %6.2f m/s %6.2f rad/s STOP %6.3f m\n", current_motor ? current_motor : total_motors,
 	       max_linear.linear_x, max_angular.angular_z, max_linear.linear_x * stopping / max_rpm);
 	syslog(LOG_INFO, "MOTOR%d SPEED %6.2f m/s %6.2f rad/s STOP %6.3f m\n", current_motor ? current_motor : total_motors,
 	       max_linear.linear_x, max_angular.angular_z, max_linear.linear_x * stopping / max_rpm);
     }
-    printf("MOTOR%d %s RPM %8.1f %8.1f %8.1f %8.1f\n",
+    Serial.printf("MOTOR%d %s RPM %8.1f %8.1f %8.1f %8.1f\n",
 	   current_motor + 1, direction ? "REV" : "FWD",
 	   current_rpm1, current_rpm2, current_rpm3, current_rpm4);
     syslog(LOG_INFO, "MOTOR%d %s RPM %8.1f %8.1f %8.1f %8.1f\n",
