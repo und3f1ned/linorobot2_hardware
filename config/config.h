@@ -30,10 +30,6 @@
     #include "custom/esp32_config.h"
 #endif
 
-#ifdef USE_PICO_ZIO_CONFIG
-    #include "custom/pico_zio_config.h"
-#endif
-
 #ifdef USE_PICO_CONFIG
     #include "custom/pico_config.h"
 #endif
