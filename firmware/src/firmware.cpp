@@ -482,10 +482,6 @@ bool destroyEntities()
 
 void setup()
 {
-#ifdef BOARD_INIT // board specific setup
-    BOARD_INIT;
-#endif
-
     Serial.begin(BAUDRATE);
     pinMode(LED_PIN, OUTPUT);
 #ifdef SDA_PIN // specify I2C pins
@@ -495,6 +491,9 @@ void setup()
     Wire.setSDA(SDA_PIN);
     Wire.setSCL(SCL_PIN);
 #endif
+#endif
+#ifdef BOARD_INIT // board specific setup
+    BOARD_INIT
 #endif
 
 #ifdef WDT_TIMEOUT
@@ -533,7 +532,7 @@ void setup()
 #endif
 
 #ifdef BOARD_INIT_LATE // board specific setup
-    BOARD_INIT_LATE;
+    BOARD_INIT_LATE
 #endif
     syslog(LOG_INFO, "%s Ready %lu", __FUNCTION__, millis());
 }

@@ -224,7 +224,7 @@ const int16_t ADC_LUT[4096] = { /* insert adc_calibrate data here */ };
 // #define ECHO_PIN 32
 #define USE_SHORT_BRAKE // for shorter stopping distance
 // #define WDT_TIMEOUT 60 // Sec
-// #define BOARD_INIT sleep(5) // wait to begin IMU calibration
+// #define BOARD_INIT {}
 #define BOARD_INIT_LATE { \
   setLevel(MOTOR_STBY_1, HIGH); \
   setLevel(MOTOR_STBY_2, HIGH); \

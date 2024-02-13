@@ -49,13 +49,13 @@
 ROBOT ORIENTATION
          FRONT
     MOTOR1  MOTOR2  (2WD/ACKERMANN)
-    MOTOR3  MOTOR4  (4WD/MECANUM)  
+    MOTOR3  MOTOR4  (4WD/MECANUM)
          BACK
 */
 
 //define your robot' specs here
 #define MOTOR_MAX_RPM 150                   // motor's max RPM
-#define MAX_RPM_RATIO 0.85                  // max RPM allowed for each MAX_RPM_ALLOWED = MOTOR_MAX_RPM * MAX_RPM_RATIO          
+#define MAX_RPM_RATIO 0.85                  // max RPM allowed for each MAX_RPM_ALLOWED = MOTOR_MAX_RPM * MAX_RPM_RATIO
 #define MOTOR_OPERATING_VOLTAGE 12          // motor's operating voltage (used to calculate max RPM)
 #define MOTOR_POWER_MAX_VOLTAGE 12          // max voltage of the motor's power source (used to calculate max RPM)
 #define MOTOR_POWER_MEASURED_VOLTAGE 12     // current voltage reading of the power connected to the motor (used for calibration)
@@ -69,10 +69,10 @@ ROBOT ORIENTATION
 #define PWM_FREQUENCY 20000                 // PWM Frequency
 
 // INVERT ENCODER COUNTS
-#define MOTOR1_ENCODER_INV false 
-#define MOTOR2_ENCODER_INV false 
-#define MOTOR3_ENCODER_INV false 
-#define MOTOR4_ENCODER_INV false 
+#define MOTOR1_ENCODER_INV false
+#define MOTOR2_ENCODER_INV false
+#define MOTOR3_ENCODER_INV false
+#define MOTOR4_ENCODER_INV false
 
 // INVERT MOTOR DIRECTIONS
 #define MOTOR1_INV false
@@ -113,7 +113,7 @@ ROBOT ORIENTATION
 
   #define PWM_MAX pow(2, PWM_BITS) - 1
   #define PWM_MIN -PWM_MAX
-#endif 
+#endif
 
 #ifdef USE_GENERIC_1_IN_MOTOR_DRIVER
   #define MOTOR1_PWM 21 //Pin no 21 is not a PWM pin on Teensy 4.x, you can use pin no 1 instead.
@@ -134,7 +134,7 @@ ROBOT ORIENTATION
 
   #define PWM_MAX pow(2, PWM_BITS) - 1
   #define PWM_MIN -PWM_MAX
-#endif 
+#endif
 
 #ifdef USE_BTS7960_MOTOR_DRIVER
   #define MOTOR1_PWM -1 //DON'T TOUCH THIS! This is just a placeholder
@@ -166,7 +166,7 @@ ROBOT ORIENTATION
   #define MOTOR2_IN_A -1 //DON'T TOUCH THIS! This is just a placeholder
   #define MOTOR2_IN_B -1 //DON'T TOUCH THIS! This is just a placeholder
 
-  #define MOTOR3_PWM 22 
+  #define MOTOR3_PWM 22
   #define MOTOR3_IN_A -1 //DON'T TOUCH THIS! This is just a placeholder
   #define MOTOR3_IN_B -1 //DON'T TOUCH THIS! This is just a placeholder
 
@@ -212,7 +212,8 @@ ROBOT ORIENTATION
 // #define ECHO_PIN 32
 #define USE_SHORT_BRAKE // for shorter stopping distance
 // #define WDT_TIMEOUT 30 // Sec
-// #define BOARD_INIT sleep(5) // wait to begin IMU calibration
+// #define BOARD_INIT {}
+// #define BOARD_INIT_LATE {}
 
 #ifdef USE_SYSLOG
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){ \
