@@ -26,8 +26,16 @@
     #include "custom/gendrv_config.h"
 #endif
 
+#ifdef USE_GENDRV_WIFI_CONFIG
+    #include "custom/gendrv_wifi_config.h"
+#endif
+
 #ifdef USE_ESP32_CONFIG
     #include "custom/esp32_config.h"
+#endif
+
+#ifdef USE_ESP32_WIFI_CONFIG
+    #include "custom/esp32_wifi_config.h"
 #endif
 
 #ifdef USE_PICO_CONFIG

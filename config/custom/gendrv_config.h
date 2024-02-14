@@ -178,19 +178,19 @@ ROBOT ORIENTATION
   #define PWM_MIN -PWM_MAX
 #endif
 
-#define USE_WIFI_TRANSPORT  // use micro ros wifi transport
+// #define USE_WIFI_TRANSPORT  // use micro ros wifi transport
 #define AGENT_IP { 192, 168, 1, 100 }  // eg IP of the desktop computer
 #define AGENT_PORT 8888
 // Enable WiFi with null terminated list of multiple APs SSID and password
-#define WIFI_AP_LIST {{"WIFI_SSID", "WIFI_PASSWORD"}, {NULL}}
+// #define WIFI_AP_LIST {{"WIFI_SSID", "WIFI_PASSWORD"}, {NULL}}
 #define WIFI_MONITOR 2 // min. period to send wifi signal strength to syslog
-#define USE_ARDUINO_OTA
-#define USE_SYSLOG
+// #define USE_ARDUINO_OTA
+// #define USE_SYSLOG
 #define SYSLOG_SERVER { 192, 168, 1, 100 }  // eg IP of the desktop computer
 #define SYSLOG_PORT 514
 #define DEVICE_HOSTNAME "gendrv"
 #define APP_NAME "hardware"
-#define USE_LIDAR_UDP  // send lidar data to udp server
+// #define USE_LIDAR_UDP  // send lidar data to udp server
 #define LIDAR_RXD 4
 // #define LIDAR_PWM 5
 #define LIDAR_SERIAL 1 // uart number
