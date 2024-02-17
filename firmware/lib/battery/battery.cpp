@@ -34,7 +34,11 @@ void InaDataUpdate(){
   ina219_overflow = ina219.getOverflow();
 }
 #else
-void initBattery() {};
+void initBattery() {
+#ifdef BATTERY_PIN
+  	analogReadResolution(12);
+#endif
+}
 #endif
 
 #ifdef BATTERY_PIN
