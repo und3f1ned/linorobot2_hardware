@@ -484,17 +484,6 @@ void setup()
 {
     Serial.begin(BAUDRATE);
     pinMode(LED_PIN, OUTPUT);
-#ifdef SDA_PIN // specify I2C pins
-#ifdef ESP32
-    Wire.begin(SDA_PIN, SCL_PIN);
-#else // teensy
-    Wire.setSDA(SDA_PIN);
-    Wire.setSCL(SCL_PIN);
-#endif
-#else
-    Wire.begin();
-#endif
-    Wire.setClock(400000);
 #ifdef BOARD_INIT // board specific setup
     BOARD_INIT
 #endif

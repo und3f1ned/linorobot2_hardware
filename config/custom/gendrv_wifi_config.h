@@ -212,7 +212,10 @@ ROBOT ORIENTATION
 // #define ECHO_PIN 32
 #define USE_SHORT_BRAKE // for shorter stopping distance
 // #define WDT_TIMEOUT 60 // Sec
-// #define BOARD_INIT {}
+#define BOARD_INIT { \
+    Wire.begin(SDA_PIN, SCL_PIN); \
+    Wire.setClock(400000); \
+}
 // #define BOARD_INIT_LATE {}
 
 #ifdef USE_SYSLOG

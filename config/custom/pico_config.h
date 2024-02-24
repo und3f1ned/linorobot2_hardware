@@ -199,8 +199,8 @@ ROBOT ORIENTATION
 #define LIDAR_SERVER { 192, 168, 1, 100 }  // eg IP of the desktop computer
 #define LIDAR_PORT 8889
 #define BAUDRATE 115200
-// #define SDA_PIN 21 // specify I2C pins
-// #define SCL_PIN 22
+#define SDA_PIN 4 // specify I2C pins
+#define SCL_PIN 5
 #define NODE_NAME "pico"
 // #define TOPIC_PREFIX "pico/"
 
@@ -219,7 +219,12 @@ const int16_t ADC_LUT[4096] = { /* insert adc_calibrate data here */ };
 // #define ECHO_PIN 32
 #define USE_SHORT_BRAKE // for shorter stopping distance
 // #define WDT_TIMEOUT 60 // Sec
-// #define BOARD_INIT {}
+#define BOARD_INIT { \
+    Wire.setSDA(SDA_PIN); \
+    Wire.setSCL(SCL_PIN); \
+    Wire.begin(); \
+    Wire.setClock(400000); \
+}
 // #define BOARD_INIT_LATE {}
 
 #ifdef USE_SYSLOG
