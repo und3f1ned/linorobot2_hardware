@@ -191,7 +191,7 @@ ROBOT ORIENTATION
 #define DEVICE_HOSTNAME "esp32s3"
 #define APP_NAME "hardware"
 // #define USE_LIDAR_UDP
-#define LIDAR_RXD 47
+#define LIDAR_RXD 2
 // #define LIDAR_PWM 15
 #define LIDAR_SERIAL 1 // uart number
 #define LIDAR_BAUDRATE 230400

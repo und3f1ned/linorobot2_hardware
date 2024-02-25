@@ -38,6 +38,14 @@
     #include "custom/esp32_wifi_config.h"
 #endif
 
+#ifdef USE_ESP32S2_CONFIG
+    #include "custom/esp32s2_config.h"
+#endif
+
+#ifdef USE_ESP32S2_WIFI_CONFIG
+    #include "custom/esp32s2_wifi_config.h"
+#endif
+
 #ifdef USE_ESP32S3_CONFIG
     #include "custom/esp32s3_config.h"
 #endif

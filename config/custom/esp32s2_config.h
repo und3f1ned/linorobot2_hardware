@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ESP32S3_WIFI_CONFIG_H
-#define ESP32S3_WIFI_CONFIG_H
+#ifndef ESP32S2_CONFIG_H
+#define ESP32S2_CONFIG_H
 
 #define LED_PIN LED_BUILTIN //used for debugging status
 
@@ -178,19 +178,19 @@ ROBOT ORIENTATION
   #define PWM_MIN -PWM_MAX
 #endif
 
-#define USE_WIFI_TRANSPORT  // use micro ros wifi transport
+// #define USE_WIFI_TRANSPORT  // use micro ros wifi transport
 #define AGENT_IP { 192, 168, 1, 100 }  // eg IP of the desktop computer
 #define AGENT_PORT 8888
 // Enable WiFi with null terminated list of multiple APs SSID and password
-#define WIFI_AP_LIST {{"WIFI_SSID", "WIFI_PASSWORD"}, {NULL}}
+// #define WIFI_AP_LIST {{"WIFI_SSID", "WIFI_PASSWORD"}, {NULL}}
 #define WIFI_MONITOR 2 // min. period to send wifi signal strength to syslog
-#define USE_ARDUINO_OTA
-#define USE_SYSLOG
+// #define USE_ARDUINO_OTA
+// #define USE_SYSLOG
 #define SYSLOG_SERVER { 192, 168, 1, 100 }  // eg IP of the desktop computer
 #define SYSLOG_PORT 514
-#define DEVICE_HOSTNAME "esp32s3_wifi"
+#define DEVICE_HOSTNAME "esp32s2"
 #define APP_NAME "hardware"
-#define USE_LIDAR_UDP
+// #define USE_LIDAR_UDP
 #define LIDAR_RXD 2
 // #define LIDAR_PWM 15
 #define LIDAR_SERIAL 1 // uart number
@@ -200,8 +200,8 @@ ROBOT ORIENTATION
 #define BAUDRATE 115200
 #define SDA_PIN 8 // specify I2C pins
 #define SCL_PIN 9
-#define NODE_NAME "esp32s3_wifi"
-// #define TOPIC_PREFIX "esp32s3_wifi/"
+#define NODE_NAME "esp32s2"
+// #define TOPIC_PREFIX "esp32s2/"
 
 // battery voltage ADC pin
 #define BATTERY_PIN 1

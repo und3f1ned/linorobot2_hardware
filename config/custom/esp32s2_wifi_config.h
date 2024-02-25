@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ESP32S3_WIFI_CONFIG_H
-#define ESP32S3_WIFI_CONFIG_H
+#ifndef ESP32S2_WIFI_CONFIG_H
+#define ESP32S2_WIFI_CONFIG_H
 
 #define LED_PIN LED_BUILTIN //used for debugging status
 
@@ -188,7 +188,7 @@ ROBOT ORIENTATION
 #define USE_SYSLOG
 #define SYSLOG_SERVER { 192, 168, 1, 100 }  // eg IP of the desktop computer
 #define SYSLOG_PORT 514
-#define DEVICE_HOSTNAME "esp32s3_wifi"
+#define DEVICE_HOSTNAME "esp32s2_wifi"
 #define APP_NAME "hardware"
 #define USE_LIDAR_UDP
 #define LIDAR_RXD 2
@@ -200,8 +200,8 @@ ROBOT ORIENTATION
 #define BAUDRATE 115200
 #define SDA_PIN 8 // specify I2C pins
 #define SCL_PIN 9
-#define NODE_NAME "esp32s3_wifi"
-// #define TOPIC_PREFIX "esp32s3_wifi/"
+#define NODE_NAME "esp32s2_wifi"
+// #define TOPIC_PREFIX "esp32s2_wifi/"
 
 // battery voltage ADC pin
 #define BATTERY_PIN 1
