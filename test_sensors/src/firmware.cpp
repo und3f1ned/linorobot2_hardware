@@ -58,20 +58,12 @@ MAG mag;
 
 void setup()
 {
+    Serial.begin(BAUDRATE);
+    pinMode(LED_PIN, OUTPUT);
 #ifdef BOARD_INIT // board specific setup
     BOARD_INIT;
 #endif
 
-    Serial.begin(BAUDRATE);
-    pinMode(LED_PIN, OUTPUT);
-#ifdef SDA_PIN // specify I2C pins
-#ifdef ESP32
-    Wire.begin(SDA_PIN, SCL_PIN);
-#else // teensy
-    Wire.setSDA(SDA_PIN);
-    Wire.setSCL(SCL_PIN);
-#endif
-#endif
     initPwm();
     initWifis();
     initOta();
@@ -80,6 +72,11 @@ void setup()
     mag.init();
     initBattery();
     initRange();
+
+#ifdef BOARD_INIT_LATE // board specific setup
+    BOARD_INIT_LATE
+#endif
+    syslog(LOG_INFO, "%s Ready %lu", __FUNCTION__, millis());
 }
 
 void loop() {

@@ -85,26 +85,17 @@ unsigned total_motors = 4;
 
 void setup()
 {
+    Serial.begin(BAUDRATE);
+    pinMode(LED_PIN, OUTPUT);
 #ifdef BOARD_INIT // board specific setup
     BOARD_INIT;
 #endif
 
-    Serial.begin(BAUDRATE);
-    pinMode(LED_PIN, OUTPUT);
-#ifdef SDA_PIN // specify I2C pins
-#ifdef ESP32
-    Wire.begin(SDA_PIN, SCL_PIN);
-#else // teensy
-    Wire.setSDA(SDA_PIN);
-    Wire.setSCL(SCL_PIN);
-#endif
-#endif
     initPwm();
     motor1_controller.begin();
     motor2_controller.begin();
     motor3_controller.begin();
     motor4_controller.begin();
-
     initWifis();
     initOta();
 
@@ -125,6 +116,7 @@ void setup()
 #ifdef BOARD_INIT_LATE // board specific setup
     BOARD_INIT_LATE;
 #endif
+    syslog(LOG_INFO, "%s Ready %lu", __FUNCTION__, millis());
 }
 
 void loop() {
