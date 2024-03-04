@@ -59,14 +59,14 @@ ROBOT ORIENTATION
 #define MOTOR_OPERATING_VOLTAGE 12          // motor's operating voltage (used to calculate max RPM)
 #define MOTOR_POWER_MAX_VOLTAGE 12          // max voltage of the motor's power source (used to calculate max RPM)
 #define MOTOR_POWER_MEASURED_VOLTAGE 12     // current voltage reading of the power connected to the motor (used for calibration)
-#define COUNTS_PER_REV1 550                 // wheel1 encoder's no of ticks per rev
-#define COUNTS_PER_REV2 550                 // wheel2 encoder's no of ticks per rev
-#define COUNTS_PER_REV3 550                 // wheel3 encoder's no of ticks per rev
-#define COUNTS_PER_REV4 550                 // wheel4 encoder's no of ticks per rev
+#define COUNTS_PER_REV1 900                 // wheel1 encoder's no of ticks per rev
+#define COUNTS_PER_REV2 900                 // wheel2 encoder's no of ticks per rev
+#define COUNTS_PER_REV3 900                 // wheel3 encoder's no of ticks per rev
+#define COUNTS_PER_REV4 900                 // wheel4 encoder's no of ticks per rev
 #define WHEEL_DIAMETER 0.0560               // wheel's diameter in meters
 #define LR_WHEELS_DISTANCE 0.224            // distance between left and right wheels
-#define PWM_BITS 10                         // PWM Resolution of the microcontroller
-#define PWM_FREQUENCY 20000                 // PWM Frequency
+#define PWM_BITS 12                         // PWM Resolution of the microcontroller
+#define PWM_FREQUENCY 100                   // PWM Frequency
 
 // INVERT ENCODER COUNTS
 #define MOTOR1_ENCODER_INV false
@@ -91,8 +91,8 @@ ROBOT ORIENTATION
 #define MOTOR3_ENCODER_A 20
 #define MOTOR3_ENCODER_B 21
 
-#define MOTOR4_ENCODER_A 26
-#define MOTOR4_ENCODER_B 27
+#define MOTOR4_ENCODER_A 2
+#define MOTOR4_ENCODER_B 3
 
 // MOTOR PINS
 #ifdef USE_GENERIC_2_IN_MOTOR_DRIVER
