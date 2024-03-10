@@ -117,52 +117,101 @@ void setup()
     BOARD_INIT_LATE;
 #endif
     syslog(LOG_INFO, "%s Ready %lu", __FUNCTION__, millis());
+    delay(2000);
 }
 
-void loop() {
-    static unsigned tk = 0; // tick
-    const unsigned run_time = 8; // run time of each motor
-    const unsigned cycle = run_time * total_motors;
-    unsigned current_motor = tk / run_time % total_motors;
-    unsigned direction = tk / cycle % 2; // 0 forward, 1 reverse
-    const int pwm_max = (1 << PWM_BITS) - 1;
-    static float max_rpm, stopping;
-
-    digitalWrite(LED_PIN, direction ? LOW : HIGH);
-    motor1_controller.spin((current_motor == 0) ? (direction ? -pwm_max : pwm_max) : 0);
-    motor2_controller.spin((current_motor == 1) ? (direction ? -pwm_max : pwm_max) : 0);
-    motor3_controller.spin((current_motor == 2) ? (direction ? -pwm_max : pwm_max) : 0);
-    motor4_controller.spin((current_motor == 3) ? (direction ? -pwm_max : pwm_max) : 0);
-
-    delay(1000);
-    float current_rpm1 = motor1_encoder.getRPM();
-    float current_rpm2 = motor2_encoder.getRPM();
-    float current_rpm3 = motor3_encoder.getRPM();
-    float current_rpm4 = motor4_encoder.getRPM();
-    if (current_motor == 0 && tk % run_time == run_time - 1) max_rpm = current_rpm1;
-    if (current_motor == 1 && tk % run_time == 0) stopping = current_rpm1;
-    if (current_motor == 1 && tk % run_time == run_time - 1) max_rpm = current_rpm2;
-    if (total_motors == 2 && current_motor == 0 && tk % run_time == 0) stopping = current_rpm2;
-    if (current_motor == 2 && tk % run_time == 0) stopping = current_rpm2;
-    if (current_motor == 2 && tk % run_time == run_time - 1) max_rpm = current_rpm3;
-    if (current_motor == 3 && tk % run_time == 0) stopping = current_rpm3;
-    if (current_motor == 3 && tk % run_time == run_time - 1) max_rpm = current_rpm4;
-    if (total_motors == 4 && current_motor == 0 && tk % run_time == 0) stopping = current_rpm4;
-    if (tk && tk % run_time == 0) {
-        Kinematics::velocities max_linear = kinematics.getVelocities(max_rpm, max_rpm, max_rpm, max_rpm);
-	Kinematics::velocities max_angular = kinematics.getVelocities(-max_rpm, max_rpm,-max_rpm, max_rpm);
-	Serial.printf("MOTOR%d SPEED %6.2f m/s %6.2f rad/s STOP %6.3f m\n", current_motor ? current_motor : total_motors,
-	       max_linear.linear_x, max_angular.angular_z, max_linear.linear_x * stopping / max_rpm);
-	syslog(LOG_INFO, "MOTOR%d SPEED %6.2f m/s %6.2f rad/s STOP %6.3f m\n", current_motor ? current_motor : total_motors,
-	       max_linear.linear_x, max_angular.angular_z, max_linear.linear_x * stopping / max_rpm);
+const unsigned ticks = 20; // 50Hz, one tick 20ms
+const float dt = ticks * 0.001;
+const unsigned run_time = 1000; // 1s
+const unsigned buf_size = run_time / ticks * 4;
+Kinematics::velocities buf[buf_size];
+unsigned idx = 0;
+void record(unsigned n) {
+    unsigned i;
+    for (i = 0; i < n; i++, idx++) {
+        float rpm1 = motor1_encoder.getRPM();
+        float rpm2 = motor2_encoder.getRPM();
+        float rpm3 = motor3_encoder.getRPM();
+        float rpm4 = motor4_encoder.getRPM();
+        if (idx < buf_size)
+            buf[idx] = kinematics.getVelocities(rpm1, rpm2, rpm3, rpm4);
+        delay(ticks);
+        runWifis();
+        runOta();
     }
-    Serial.printf("MOTOR%d %s RPM %8.1f %8.1f %8.1f %8.1f\n",
-	   current_motor + 1, direction ? "REV" : "FWD",
-	   current_rpm1, current_rpm2, current_rpm3, current_rpm4);
-    syslog(LOG_INFO, "MOTOR%d %s RPM %8.1f %8.1f %8.1f %8.1f\n",
-	   current_motor + 1, direction ? "REV" : "FWD",
-	   current_rpm1, current_rpm2, current_rpm3, current_rpm4);
-    tk++;
+}
+
+void dump_record(void) {
+    float max_vel = 0, min_vel = 0, max_acc = 0, min_acc = 0;
+    for (idx = 0; idx < buf_size; idx++) {
+        float vel_x = buf[idx].linear_x;
+        float vel_y = buf[idx].linear_y;
+        float vel_z = buf[idx].angular_z;
+        if (vel_x > max_vel) max_vel = vel_x;
+        if (vel_x < min_vel) min_vel = vel_x;
+//        syslog(LOG_INFO, "%04d VEL %6.2f %6.2f m/s  %6.2f rad/s",
+//            idx, vel_x, vel_y, vel_z);
+    }
+    for (idx = 0; idx < buf_size; idx++) {
+        unsigned prev = idx ? (idx -1) : 0;
+        float acc_x = (buf[idx].linear_x - buf[prev].linear_x) / dt;
+        float acc_y = (buf[idx].linear_y - buf[prev].linear_y) / dt;
+        float acc_z = (buf[idx].angular_z - buf[prev].angular_z) / dt;
+        if (acc_x > max_acc) max_acc = acc_x;
+        if (acc_x < min_acc) min_acc = acc_x;
+//        syslog(LOG_INFO, "%04d ACC %6.2f %6.2f m/s2 %6.2f rad/s2",
+//            idx, acc_x, acc_y, acc_z);
+    }
+    syslog(LOG_INFO, "max VEL %6.2f %6.2f m/s", max_vel, min_vel);
+    syslog(LOG_INFO, "max ACC %6.2f %6.2f m/s2", max_acc, min_acc);
+    for (idx = 0; idx < buf_size; idx++) {
+        if (buf[idx].linear_x > max_vel * 0.9) break;
+    }
+    syslog(LOG_INFO, "time to 0.9x max vel %6.2f sec", idx * dt);
+}
+
+unsigned runs = 2;
+void loop() {
+    const int pwm_max = PWM_MAX;
+    const int pwm_min = -pwm_max;
+
+    while (runs) {
+        runs--;
+        idx = 0;
+        // full speed forward
+        digitalWrite(LED_PIN, HIGH);
+        motor1_controller.spin(pwm_max);
+        motor2_controller.spin(pwm_max);
+        motor3_controller.spin(pwm_max);
+        motor4_controller.spin(pwm_max);
+        record(run_time / ticks);
+        // stop
+        digitalWrite(LED_PIN, LOW);
+        motor1_controller.spin(0);
+        motor2_controller.spin(0);
+        motor3_controller.spin(0);
+        motor4_controller.spin(0);
+        record(run_time / ticks);
+        // full speed backward
+        digitalWrite(LED_PIN, HIGH);
+        motor1_controller.spin(pwm_min);
+        motor2_controller.spin(pwm_min);
+        motor3_controller.spin(pwm_min);
+        motor4_controller.spin(pwm_min);
+        record(run_time / ticks);
+        // stop
+        digitalWrite(LED_PIN, LOW);
+        motor1_controller.spin(0);
+        motor2_controller.spin(0);
+        motor3_controller.spin(0);
+        motor4_controller.spin(0);
+        record(run_time / ticks);
+        // print result
+        dump_record();
+    }
+
+    // idle
+    delay(100);
     runWifis();
     runOta();
 }
