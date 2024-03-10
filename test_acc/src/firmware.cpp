@@ -120,11 +120,12 @@ void setup()
     delay(2000);
 }
 
-const unsigned ticks = 20; // 50Hz, one tick 20ms
+const unsigned ticks = 20;
 const float dt = ticks * 0.001;
 const unsigned run_time = 1000; // 1s
 const unsigned buf_size = run_time / ticks * 4;
 Kinematics::velocities buf[buf_size];
+float imu_max_acc = 0, imu_min_acc = 0;
 unsigned idx = 0;
 void record(unsigned n) {
     unsigned i;
@@ -133,6 +134,11 @@ void record(unsigned n) {
         float rpm2 = motor2_encoder.getRPM();
         float rpm3 = motor3_encoder.getRPM();
         float rpm4 = motor4_encoder.getRPM();
+        imu_msg = imu.getData();
+        float imu_acc_x = imu_msg.linear_acceleration.x;
+        if (imu_acc_x > imu_max_acc) imu_max_acc = imu_acc_x;
+        if (imu_acc_x < imu_min_acc) imu_min_acc = imu_acc_x;
+
         if (idx < buf_size)
             buf[idx] = kinematics.getVelocities(rpm1, rpm2, rpm3, rpm4);
         delay(ticks);
@@ -162,11 +168,16 @@ void dump_record(void) {
 //        syslog(LOG_INFO, "%04d ACC %6.2f %6.2f m/s2 %6.2f rad/s2",
 //            idx, acc_x, acc_y, acc_z);
     }
-    syslog(LOG_INFO, "max VEL %6.2f %6.2f m/s", max_vel, min_vel);
-    syslog(LOG_INFO, "max ACC %6.2f %6.2f m/s2", max_acc, min_acc);
+    Serial.printf("MAX VEL %6.2f %6.2f m/s\n", max_vel, min_vel);
+    Serial.printf("MAX ACC %6.2f %6.2f m/s2\n", max_acc, min_acc);
+    Serial.printf("IMU ACC %6.2f %6.2f m/s2\n", imu_max_acc, imu_min_acc);
     for (idx = 0; idx < buf_size; idx++) {
         if (buf[idx].linear_x > max_vel * 0.9) break;
     }
+    Serial.printf("time to 0.9x max vel %6.2f sec\n", idx * dt);
+    syslog(LOG_INFO, "MAX VEL %6.2f %6.2f m/s", max_vel, min_vel);
+    syslog(LOG_INFO, "MAX ACC %6.2f %6.2f m/s2", max_acc, min_acc);
+    syslog(LOG_INFO, "IMU ACC %6.2f %6.2f m/s2", imu_max_acc, imu_min_acc);
     syslog(LOG_INFO, "time to 0.9x max vel %6.2f sec", idx * dt);
 }
 
