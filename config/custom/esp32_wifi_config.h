@@ -65,8 +65,8 @@ ROBOT ORIENTATION
 #define COUNTS_PER_REV4 450                 // wheel4 encoder's no of ticks per rev
 #define WHEEL_DIAMETER 0.0560               // wheel's diameter in meters
 #define LR_WHEELS_DISTANCE 0.224            // distance between left and right wheels
-#define PWM_BITS 12                         // PWM Resolution of the microcontroller
-#define PWM_FREQUENCY 100                   // PWM Frequency
+#define PWM_BITS 10                         // PWM Resolution of the microcontroller
+#define PWM_FREQUENCY 20000                 // PWM Frequency
 
 // INVERT ENCODER COUNTS
 #define MOTOR1_ENCODER_INV false
@@ -138,8 +138,8 @@ ROBOT ORIENTATION
 
 #ifdef USE_BTS7960_MOTOR_DRIVER
   #define MOTOR1_PWM -1 //DON'T TOUCH THIS! This is just a placeholder
-  #define MOTOR1_IN_A 19 // Pin no 21 is not a PWM pin on Teensy 4.x, you can use pin no 1 instead.
-  #define MOTOR1_IN_B 18 // Pin no 20 is not a PWM pin on Teensy 4.x, you can use pin no 0 instead.
+  #define MOTOR1_IN_A 19
+  #define MOTOR1_IN_B 18
 
   #define MOTOR2_PWM -1 //DON'T TOUCH THIS! This is just a placeholder
   #define MOTOR2_IN_A 16
