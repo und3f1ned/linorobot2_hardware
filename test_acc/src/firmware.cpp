@@ -149,6 +149,7 @@ void record(unsigned n) {
 
 void dump_record(void) {
     float max_vel = 0, min_vel = 0, max_acc = 0, min_acc = 0;
+    float dist = 0;
     for (idx = 0; idx < buf_size; idx++) {
         float vel_x = buf[idx].linear_x;
         float vel_y = buf[idx].linear_y;
@@ -168,17 +169,21 @@ void dump_record(void) {
 //        syslog(LOG_INFO, "%04d ACC %6.2f %6.2f m/s2 %6.2f rad/s2",
 //            idx, acc_x, acc_y, acc_z);
     }
-    Serial.printf("MAX VEL %6.2f %6.2f m/s\n", max_vel, min_vel);
-    Serial.printf("MAX ACC %6.2f %6.2f m/s2\n", max_acc, min_acc);
-    Serial.printf("IMU ACC %6.2f %6.2f m/s2\n", imu_max_acc, imu_min_acc);
+    for (idx = buf_size / 4; idx < buf_size / 2; idx++)
+        dist += buf[idx].linear_x * dt;
     for (idx = 0; idx < buf_size; idx++) {
         if (buf[idx].linear_x > max_vel * 0.9) break;
     }
+    Serial.printf("MAX VEL %6.2f %6.2f m/s\n", max_vel, min_vel);
+    Serial.printf("MAX ACC %6.2f %6.2f m/s2\n", max_acc, min_acc);
+    Serial.printf("IMU ACC %6.2f %6.2f m/s2\n", imu_max_acc, imu_min_acc);
     Serial.printf("time to 0.9x max vel %6.2f sec\n", idx * dt);
+    Serial.printf("distance to stop %6.2f m\n", dist);
     syslog(LOG_INFO, "MAX VEL %6.2f %6.2f m/s", max_vel, min_vel);
     syslog(LOG_INFO, "MAX ACC %6.2f %6.2f m/s2", max_acc, min_acc);
     syslog(LOG_INFO, "IMU ACC %6.2f %6.2f m/s2", imu_max_acc, imu_min_acc);
     syslog(LOG_INFO, "time to 0.9x max vel %6.2f sec", idx * dt);
+    syslog(LOG_INFO, "distance to stop %6.2f m", dist);
 }
 
 unsigned runs = 2;
