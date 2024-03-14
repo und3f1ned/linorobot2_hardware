@@ -400,6 +400,7 @@ bool createEntities()
 	ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, BatteryState),
 	TOPIC_PREFIX "battery"
     ));
+#ifdef ECHO_PIN
     // create range pyblisher
     RCCHECK(rclc_publisher_init_default(
 	&range_publisher,
@@ -407,6 +408,7 @@ bool createEntities()
 	ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Range),
 	TOPIC_PREFIX "ultrasound"
     ));
+#endif
     // create twist command subscriber
     RCCHECK(rclc_subscription_init_default(
         &twist_subscriber,
@@ -429,6 +431,7 @@ bool createEntities()
         RCL_MS_TO_NS(battery_timer_timeout),
         batteryCallback
     ));
+#ifdef ECHO_PIN
     const unsigned int range_timer_timeout = 100;
     RCCHECK(rclc_timer_init_default(
         &range_timer,
@@ -436,6 +439,7 @@ bool createEntities()
         RCL_MS_TO_NS(range_timer_timeout),
         rangeCallback
     ));
+#endif
     executor = rclc_executor_get_zero_initialized_executor();
     RCCHECK(rclc_executor_init(&executor, &support.context, 4, & allocator));
     RCCHECK(rclc_executor_add_subscription(
@@ -447,7 +451,9 @@ bool createEntities()
     ));
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
     RCCHECK(rclc_executor_add_timer(&executor, &battery_timer));
+#ifdef ECHO_PIN
     RCCHECK(rclc_executor_add_timer(&executor, &range_timer));
+#endif
 
     // synchronize time with the agent
     syncTime();
@@ -466,11 +472,15 @@ bool destroyEntities()
     RCSOFTCHECK(rcl_publisher_fini(&imu_publisher, &node));
     RCSOFTCHECK(rcl_publisher_fini(&mag_publisher, &node));
     RCSOFTCHECK(rcl_publisher_fini(&battery_publisher, &node));
+#ifdef ECHO_PIN
     RCSOFTCHECK(rcl_publisher_fini(&range_publisher, &node));
+#endif
     RCSOFTCHECK(rcl_subscription_fini(&twist_subscriber, &node));
     RCSOFTCHECK(rcl_timer_fini(&control_timer));
     RCSOFTCHECK(rcl_timer_fini(&battery_timer));
+#ifdef ECHO_PIN
     RCSOFTCHECK(rcl_timer_fini(&range_timer));
+#endif
     RCSOFTCHECK(rclc_executor_fini(&executor));
     RCSOFTCHECK(rcl_node_fini(&node))
     RCSOFTCHECK(rclc_support_fini(&support));
