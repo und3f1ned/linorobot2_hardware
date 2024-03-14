@@ -397,6 +397,7 @@ bool createEntities()
         TOPIC_PREFIX "imu/mag"
     ));
 #endif
+#if defined(BATTERY_PIN) || defined(USE_INA219)
     // create battery pyblisher
     RCCHECK(rclc_publisher_init_default(
 	&battery_publisher,
@@ -404,6 +405,7 @@ bool createEntities()
 	ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, BatteryState),
 	TOPIC_PREFIX "battery"
     ));
+#endif
 #ifdef ECHO_PIN
     // create range pyblisher
     RCCHECK(rclc_publisher_init_default(
@@ -428,6 +430,7 @@ bool createEntities()
         RCL_MS_TO_NS(control_timeout),
         controlCallback
     ));
+#if defined(BATTERY_PIN) || defined(USE_INA219)
     const unsigned int battery_timer_timeout = 2000;
     RCCHECK(rclc_timer_init_default(
         &battery_timer,
@@ -435,6 +438,7 @@ bool createEntities()
         RCL_MS_TO_NS(battery_timer_timeout),
         batteryCallback
     ));
+#endif
 #ifdef ECHO_PIN
     const unsigned int range_timer_timeout = 100;
     RCCHECK(rclc_timer_init_default(
@@ -454,7 +458,9 @@ bool createEntities()
         ON_NEW_DATA
     ));
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
+#if defined(BATTERY_PIN) || defined(USE_INA219)
     RCCHECK(rclc_executor_add_timer(&executor, &battery_timer));
+#endif
 #ifdef ECHO_PIN
     RCCHECK(rclc_executor_add_timer(&executor, &range_timer));
 #endif
@@ -477,13 +483,17 @@ bool destroyEntities()
 #ifndef USE_FAKE_MAG
     RCSOFTCHECK(rcl_publisher_fini(&mag_publisher, &node));
 #endif
+#if defined(BATTERY_PIN) || defined(USE_INA219)
     RCSOFTCHECK(rcl_publisher_fini(&battery_publisher, &node));
+#endif
 #ifdef ECHO_PIN
     RCSOFTCHECK(rcl_publisher_fini(&range_publisher, &node));
 #endif
     RCSOFTCHECK(rcl_subscription_fini(&twist_subscriber, &node));
     RCSOFTCHECK(rcl_timer_fini(&control_timer));
+#if defined(BATTERY_PIN) || defined(USE_INA219)
     RCSOFTCHECK(rcl_timer_fini(&battery_timer));
+#endif
 #ifdef ECHO_PIN
     RCSOFTCHECK(rcl_timer_fini(&range_timer));
 #endif
