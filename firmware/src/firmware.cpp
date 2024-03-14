@@ -351,7 +351,9 @@ void publishData()
     mag_msg.header.stamp.nanosec = time_stamp.tv_nsec;
 
     RCSOFTCHECK(rcl_publish(&imu_publisher, &imu_msg, NULL));
+#ifndef USE_FAKE_MAG
     RCSOFTCHECK(rcl_publish(&mag_publisher, &mag_msg, NULL));
+#endif
     RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
 }
 
@@ -387,12 +389,14 @@ bool createEntities()
         ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
         TOPIC_PREFIX "imu/data"
     ));
+#ifndef USE_FAKE_MAG
     RCCHECK(rclc_publisher_init_default(
         &mag_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, MagneticField),
         TOPIC_PREFIX "imu/mag"
     ));
+#endif
     // create battery pyblisher
     RCCHECK(rclc_publisher_init_default(
 	&battery_publisher,
@@ -470,7 +474,9 @@ bool destroyEntities()
 
     RCSOFTCHECK(rcl_publisher_fini(&odom_publisher, &node));
     RCSOFTCHECK(rcl_publisher_fini(&imu_publisher, &node));
+#ifndef USE_FAKE_MAG
     RCSOFTCHECK(rcl_publisher_fini(&mag_publisher, &node));
+#endif
     RCSOFTCHECK(rcl_publisher_fini(&battery_publisher, &node));
 #ifdef ECHO_PIN
     RCSOFTCHECK(rcl_publisher_fini(&range_publisher, &node));
