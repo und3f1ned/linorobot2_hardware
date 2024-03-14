@@ -156,8 +156,10 @@ void dump_record(void) {
         float vel_z = buf[idx].angular_z;
         if (vel_x > max_vel) max_vel = vel_x;
         if (vel_x < min_vel) min_vel = vel_x;
-//        syslog(LOG_INFO, "%04d VEL %6.2f %6.2f m/s  %6.2f rad/s",
-//            idx, vel_x, vel_y, vel_z);
+        Serial.printf("%04d VEL %6.2f %6.2f m/s  %6.2f rad/s\n",
+            idx, vel_x, vel_y, vel_z);
+        syslog(LOG_INFO, "%04d VEL %6.2f %6.2f m/s  %6.2f rad/s",
+            idx, vel_x, vel_y, vel_z);
     }
     for (idx = 0; idx < buf_size; idx++) {
         unsigned prev = idx ? (idx -1) : 0;
@@ -166,8 +168,10 @@ void dump_record(void) {
         float acc_z = (buf[idx].angular_z - buf[prev].angular_z) / dt;
         if (acc_x > max_acc) max_acc = acc_x;
         if (acc_x < min_acc) min_acc = acc_x;
-//        syslog(LOG_INFO, "%04d ACC %6.2f %6.2f m/s2 %6.2f rad/s2",
-//            idx, acc_x, acc_y, acc_z);
+        Serial.printf("%04d ACC %6.2f %6.2f m/s2 %6.2f rad/s2\n",
+            idx, acc_x, acc_y, acc_z);
+        syslog(LOG_INFO, "%04d ACC %6.2f %6.2f m/s2 %6.2f rad/s2",
+            idx, acc_x, acc_y, acc_z);
     }
     for (idx = buf_size / 4; idx < buf_size / 2; idx++)
         dist += buf[idx].linear_x * dt;
