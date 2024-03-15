@@ -202,6 +202,7 @@ ROBOT ORIENTATION
 #define SCL_PIN 22
 #define NODE_NAME "esp32_wifi"
 // #define TOPIC_PREFIX "esp32_wifi/"
+// #define CONTROL_TIMER 20
 
 // battery voltage ADC pin
 #define BATTERY_PIN 33

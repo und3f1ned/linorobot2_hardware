@@ -78,6 +78,9 @@ static inline void set_microros_net_transports(IPAddress agent_ip, uint16_t agen
 #ifndef TOPIC_PREFIX
 #define TOPIC_PREFIX
 #endif
+#ifndef CONTROL_TIMER
+#define CONTROL_TIMER 20
+#endif
 
 #ifndef RCCHECK
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){rclErrorLoop();}}
@@ -423,7 +426,7 @@ bool createEntities()
         TOPIC_PREFIX "cmd_vel"
     ));
     // create timer for actuating the motors at 50 Hz (1000/20)
-    const unsigned int control_timeout = 20;
+    const unsigned int control_timeout = CONTROL_TIMER;
     RCCHECK(rclc_timer_init_default(
         &control_timer,
         &support,

@@ -202,6 +202,7 @@ ROBOT ORIENTATION
 #define SCL_PIN 33
 #define NODE_NAME "gendrv_wifi"
 // #define TOPIC_PREFIX "gendrv_wifi/"
+// #define CONTROL_TIMER 20
 
 // battery voltage ADC pin
 // #define BATTERY_PIN 33

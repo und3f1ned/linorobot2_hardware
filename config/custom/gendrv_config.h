@@ -202,6 +202,7 @@ ROBOT ORIENTATION
 #define SCL_PIN 33
 #define NODE_NAME "gendrv"
 // #define TOPIC_PREFIX "gendrv/"
+// #define CONTROL_TIMER 20
 
 // battery voltage ADC pin
 // #define BATTERY_PIN 33

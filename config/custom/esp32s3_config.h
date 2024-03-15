@@ -202,6 +202,7 @@ ROBOT ORIENTATION
 #define SCL_PIN 9
 #define NODE_NAME "esp32s3"
 // #define TOPIC_PREFIX "esp32s3/"
+// #define CONTROL_TIMER 20
 
 // battery voltage ADC pin
 #define BATTERY_PIN 1
