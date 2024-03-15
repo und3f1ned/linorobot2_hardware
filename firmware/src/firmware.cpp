@@ -318,6 +318,7 @@ void publishData()
 {
     odom_msg = odometry.getData();
     imu_msg = imu.getData();
+#ifndef USE_FAKE_MAG
     mag_msg = mag.getData();
 #ifdef MAG_BIAS
     const float mag_bias[3] = MAG_BIAS;
@@ -344,6 +345,7 @@ void publishData()
     imu_msg.orientation.y = sy * cp * sr + cy * sp * cr;
     imu_msg.orientation.z = sy * cp * cr - cy * sp * sr;
     imu_msg.orientation.w = cy * cp * cr + sy * sp * sr;
+#endif
 
     struct timespec time_stamp = getTime();
 
@@ -353,8 +355,10 @@ void publishData()
     imu_msg.header.stamp.sec = time_stamp.tv_sec;
     imu_msg.header.stamp.nanosec = time_stamp.tv_nsec;
 
+#ifndef USE_FAKE_MAG
     mag_msg.header.stamp.sec = time_stamp.tv_sec;
     mag_msg.header.stamp.nanosec = time_stamp.tv_nsec;
+#endif
 
     RCSOFTCHECK(rcl_publish(&imu_publisher, &imu_msg, NULL));
 #ifndef USE_FAKE_MAG
