@@ -596,4 +596,7 @@ void loop() {
 #ifdef WDT_TIMEOUT
     esp_task_wdt_reset();
 #endif
+#ifdef BOARD_LOOP // board specific loop
+    BOARD_LOOP
+#endif
 }

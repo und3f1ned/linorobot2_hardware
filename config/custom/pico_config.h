@@ -204,6 +204,7 @@ ROBOT ORIENTATION
 #define NODE_NAME "pico"
 // #define TOPIC_PREFIX "pico/"
 // #define CONTROL_TIMER 20
+// #define BATTERY_TIMER 2000
 
 // battery voltage ADC pin
 #define BATTERY_PIN 28
@@ -227,7 +228,7 @@ const int16_t ADC_LUT[4096] = { /* insert adc_calibrate data here */ };
     Wire.setClock(400000); \
 }
 // #define BOARD_INIT_LATE {}
-// #define BATTERY_TIMER 2000
+// #define BOARD_LOOP {}
 
 #ifdef USE_SYSLOG
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){ \
