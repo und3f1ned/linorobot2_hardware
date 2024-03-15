@@ -81,6 +81,9 @@ static inline void set_microros_net_transports(IPAddress agent_ip, uint16_t agen
 #ifndef CONTROL_TIMER
 #define CONTROL_TIMER 20
 #endif
+#ifndef BATTERY_TIMER
+#define BATTERY_TIMER 2000
+#endif
 
 #ifndef RCCHECK
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){rclErrorLoop();}}
@@ -434,7 +437,7 @@ bool createEntities()
         controlCallback
     ));
 #if defined(BATTERY_PIN) || defined(USE_INA219)
-    const unsigned int battery_timer_timeout = 2000;
+    const unsigned int battery_timer_timeout = BATTERY_TIMER;
     RCCHECK(rclc_timer_init_default(
         &battery_timer,
         &support,

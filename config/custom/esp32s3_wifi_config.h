@@ -203,6 +203,7 @@ ROBOT ORIENTATION
 #define NODE_NAME "esp32s3_wifi"
 // #define TOPIC_PREFIX "esp32s3_wifi/"
 // #define CONTROL_TIMER 20
+// #define BATTERY_TIMER 2000
 
 // battery voltage ADC pin
 #define BATTERY_PIN 1

@@ -227,6 +227,7 @@ const int16_t ADC_LUT[4096] = { /* insert adc_calibrate data here */ };
     Wire.setClock(400000); \
 }
 // #define BOARD_INIT_LATE {}
+// #define BATTERY_TIMER 2000
 
 #ifdef USE_SYSLOG
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){ \
