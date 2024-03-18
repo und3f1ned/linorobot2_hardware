@@ -41,6 +41,7 @@
 // #define USE_QMC5883L_MAG
 // #define MAG_BIAS { 0, 0, 0 }
 // #define IMU_TWEAK {}
+// #define MAG_TWEAK {}
 
 #define K_P 0.6                             // P constant
 #define K_I 0.8                             // I constant

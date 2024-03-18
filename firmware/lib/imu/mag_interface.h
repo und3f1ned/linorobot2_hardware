@@ -17,6 +17,7 @@
 #define MAG_INTERFACE
 
 #include <sensor_msgs/msg/magnetic_field.h>
+#include "config.h"
 
 class MAGInterface
 {
@@ -46,6 +47,9 @@ class MAGInterface
             mag_msg_.magnetic_field_covariance[4] = mag_cov_;
             mag_msg_.magnetic_field_covariance[8] = mag_cov_;
 
+#ifdef MAG_TWEAK
+            MAG_TWEAK
+#endif
             return mag_msg_;
         }
 };
