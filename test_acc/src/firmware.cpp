@@ -194,10 +194,10 @@ void dump_record(void) {
     syslog(LOG_INFO, "distance to stop %6.2f m", dist);
 }
 
-unsigned runs = 2;
+unsigned runs = 6;
 void loop() {
-    const int pwm_max = PWM_MAX;
-    const int pwm_min = -pwm_max;
+    float pwm_max = PWM_MAX;
+    float pwm_min = -pwm_max;
 
     while (runs) {
         runs--;
@@ -232,6 +232,12 @@ void loop() {
         record(run_time / ticks);
         // print result
         dump_record();
+        Serial.printf("MAX PWM %6.1f %6.1f\n", pwm_max, pwm_min);
+        syslog(LOG_INFO, "MAX PWM %6.1f %6.1f", pwm_max, pwm_min);
+        if ((runs & 1) == 0) {
+            pwm_max /= 2;
+            pwm_min /= 2;
+        }
     }
 
     // idle
