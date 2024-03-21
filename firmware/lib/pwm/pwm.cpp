@@ -54,7 +54,7 @@ void setLevel(int pin, int value)
     if (pin < 0) return;
 #ifdef PCA_BASE
     if (pin >= PCA_BASE)
-        pwm.setPin(pin - PCA_BASE, value ? PWM_MAX : 0);
+        pwm.setPin(pin - PCA_BASE, value ? ((1 << PWM_BITS) - 1) : 0);
 #endif
     else
         digitalWrite(pin, value);
