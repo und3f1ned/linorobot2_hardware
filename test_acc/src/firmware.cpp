@@ -125,6 +125,7 @@ const float dt = ticks * 0.001;
 const unsigned run_time = 1000; // 1s
 const unsigned buf_size = run_time / ticks * 4;
 Kinematics::velocities buf[buf_size];
+float batt[buf_size];
 float imu_max_acc = 0, imu_min_acc = 0;
 unsigned idx = 0;
 void record(unsigned n) {
@@ -135,12 +136,15 @@ void record(unsigned n) {
         float rpm3 = motor3_encoder.getRPM();
         float rpm4 = motor4_encoder.getRPM();
         imu_msg = imu.getData();
+        battery_msg = getBattery();
         float imu_acc_x = imu_msg.linear_acceleration.x;
         if (imu_acc_x > imu_max_acc) imu_max_acc = imu_acc_x;
         if (imu_acc_x < imu_min_acc) imu_min_acc = imu_acc_x;
 
-        if (idx < buf_size)
+        if (idx < buf_size) {
             buf[idx] = kinematics.getVelocities(rpm1, rpm2, rpm3, rpm4);
+            batt[idx] = battery_msg.voltage;
+        }
         delay(ticks);
         runWifis();
         runOta();
@@ -156,10 +160,10 @@ void dump_record(void) {
         float vel_z = buf[idx].angular_z;
         if (vel_x > max_vel) max_vel = vel_x;
         if (vel_x < min_vel) min_vel = vel_x;
-        Serial.printf("%04d VEL %6.2f %6.2f m/s  %6.2f rad/s\n",
-            idx, vel_x, vel_y, vel_z);
-        syslog(LOG_INFO, "%04d VEL %6.2f %6.2f m/s  %6.2f rad/s",
-            idx, vel_x, vel_y, vel_z);
+        Serial.printf("%04d VEL %6.2f %6.2f m/s  %6.2f rad/s BAT %5.2fV\n",
+            idx, vel_x, vel_y, vel_z, batt[idx]);
+        syslog(LOG_INFO, "%04d VEL %6.2f %6.2f m/s  %6.2f rad BAT %5.2fV/s",
+            idx, vel_x, vel_y, vel_z, batt[idx]);
     }
     for (idx = 0; idx < buf_size; idx++) {
         unsigned prev = idx ? (idx -1) : 0;
@@ -168,10 +172,10 @@ void dump_record(void) {
         float acc_z = (buf[idx].angular_z - buf[prev].angular_z) / dt;
         if (acc_x > max_acc) max_acc = acc_x;
         if (acc_x < min_acc) min_acc = acc_x;
-        Serial.printf("%04d ACC %6.2f %6.2f m/s2 %6.2f rad/s2\n",
-            idx, acc_x, acc_y, acc_z);
-        syslog(LOG_INFO, "%04d ACC %6.2f %6.2f m/s2 %6.2f rad/s2",
-            idx, acc_x, acc_y, acc_z);
+        Serial.printf("%04d ACC %6.2f %6.2f m/s2 %6.2f rad/s2 BAT %5.2fV\n",
+            idx, acc_x, acc_y, acc_z, batt[idx]);
+        syslog(LOG_INFO, "%04d ACC %6.2f %6.2f m/s2 %6.2f rad/s2 BAT %5.2fV",
+            idx, acc_x, acc_y, acc_z, batt[idx]);
     }
     for (idx = buf_size / 4; idx < buf_size / 2; idx++)
         dist += buf[idx].linear_x * dt;
