@@ -49,7 +49,7 @@
 #ifdef WDT_TIMEOUT
 #include <esp_task_wdt.h>
 #endif
-#ifdef USE_WIFI_TRANSPORT
+#ifdef MICRO_ROS_TRANSPORT_ARDUINO_WIFI
 // remove wifi initialization code from wifi transport
 static inline void set_microros_net_transports(IPAddress agent_ip, uint16_t agent_port)
 {
@@ -534,7 +534,7 @@ void setup()
     initRange();
     initLidar(); // after wifi connected
 
-#ifdef USE_WIFI_TRANSPORT
+#ifdef MICRO_ROS_TRANSPORT_ARDUINO_WIFI
     set_microros_net_transports(AGENT_IP, AGENT_PORT);
 #else
     set_microros_serial_transports(Serial);
