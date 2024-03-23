@@ -84,6 +84,9 @@ static inline void set_microros_net_transports(IPAddress agent_ip, uint16_t agen
 #ifndef BATTERY_TIMER
 #define BATTERY_TIMER 2000
 #endif
+#ifndef BATTERY_DIP
+#define BATTERY_DIP 0.98
+#endif
 
 #ifndef RCCHECK
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){rclErrorLoop();}}
@@ -122,6 +125,7 @@ rcl_timer_t range_timer;
 unsigned long long time_offset = 0;
 unsigned long prev_cmd_time = 0;
 unsigned long prev_odom_update = 0;
+float prev_voltage;
 
 enum states
 {
@@ -281,19 +285,6 @@ struct timespec getTime()
     return tp;
 }
 
-void batteryCallback(rcl_timer_t * timer, int64_t last_call_time)
-{
-    RCLC_UNUSED(last_call_time);
-    if (timer != NULL)
-    {
-        battery_msg = getBattery();
-	struct timespec time_stamp = getTime();
-	battery_msg.header.stamp.sec = time_stamp.tv_sec;
-	battery_msg.header.stamp.nanosec = time_stamp.tv_nsec;
-	RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL));
-    }
-}
-
 void rangeCallback(rcl_timer_t * timer, int64_t last_call_time)
 {
     RCLC_UNUSED(last_call_time);
@@ -316,6 +307,7 @@ void twistCallback(const void * msgin)
 
 void publishData()
 {
+    static unsigned skip_dip = 0;
     odom_msg = odometry.getData();
     imu_msg = imu.getData();
 #ifndef USE_FAKE_MAG
@@ -346,6 +338,19 @@ void publishData()
     RCSOFTCHECK(rcl_publish(&mag_publisher, &mag_msg, NULL));
 #endif
     RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
+#if defined(BATTERY_PIN) || defined(USE_INA219)
+    battery_msg = getBattery();
+    mag_msg.header.stamp.sec = time_stamp.tv_sec;
+    mag_msg.header.stamp.nanosec = time_stamp.tv_nsec;
+    if (!skip_dip && battery_msg.voltage < prev_voltage * BATTERY_DIP) {
+        RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL));
+	syslog(LOG_WARNING, "%s voltage dip %.2f", __FUNCTION__, battery_msg.voltage);
+        skip_dip = 5;
+    }
+    if (skip_dip) skip_dip--;
+    battery_msg.voltage = prev_voltage = battery_msg.voltage * 0.01 + prev_voltage * 0.99;
+    EXECUTE_EVERY_N_MS(BATTERY_TIMER, RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL)));
+#endif
 }
 
 void controlCallback(rcl_timer_t * timer, int64_t last_call_time)
@@ -421,15 +426,6 @@ bool createEntities()
         RCL_MS_TO_NS(control_timeout),
         controlCallback
     ));
-#if defined(BATTERY_PIN) || defined(USE_INA219)
-    const unsigned int battery_timer_timeout = BATTERY_TIMER;
-    RCCHECK(rclc_timer_init_default(
-        &battery_timer,
-        &support,
-        RCL_MS_TO_NS(battery_timer_timeout),
-        batteryCallback
-    ));
-#endif
 #ifdef ECHO_PIN
     const unsigned int range_timer_timeout = 100;
     RCCHECK(rclc_timer_init_default(
@@ -440,7 +436,7 @@ bool createEntities()
     ));
 #endif
     executor = rclc_executor_get_zero_initialized_executor();
-    RCCHECK(rclc_executor_init(&executor, &support.context, 4, & allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 3, & allocator));
     RCCHECK(rclc_executor_add_subscription(
         &executor,
         &twist_subscriber,
@@ -449,9 +445,6 @@ bool createEntities()
         ON_NEW_DATA
     ));
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
-#if defined(BATTERY_PIN) || defined(USE_INA219)
-    RCCHECK(rclc_executor_add_timer(&executor, &battery_timer));
-#endif
 #ifdef ECHO_PIN
     RCCHECK(rclc_executor_add_timer(&executor, &range_timer));
 #endif
@@ -482,9 +475,6 @@ bool destroyEntities()
 #endif
     RCSOFTCHECK(rcl_subscription_fini(&twist_subscriber, &node));
     RCSOFTCHECK(rcl_timer_fini(&control_timer));
-#if defined(BATTERY_PIN) || defined(USE_INA219)
-    RCSOFTCHECK(rcl_timer_fini(&battery_timer));
-#endif
 #ifdef ECHO_PIN
     RCSOFTCHECK(rcl_timer_fini(&range_timer));
 #endif
@@ -533,6 +523,8 @@ void setup()
     initBattery();
     initRange();
     initLidar(); // after wifi connected
+    battery_msg = getBattery();
+    prev_voltage = battery_msg.voltage;
 
 #ifdef MICRO_ROS_TRANSPORT_ARDUINO_WIFI
     set_microros_net_transports(AGENT_IP, AGENT_PORT);
