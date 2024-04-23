@@ -340,8 +340,8 @@ void publishData()
     RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
 #if defined(BATTERY_PIN) || defined(USE_INA219)
     battery_msg = getBattery();
-    mag_msg.header.stamp.sec = time_stamp.tv_sec;
-    mag_msg.header.stamp.nanosec = time_stamp.tv_nsec;
+    battery_msg.header.stamp.sec = time_stamp.tv_sec;
+    battery_msg.header.stamp.nanosec = time_stamp.tv_nsec;
     if (!skip_dip && battery_msg.voltage < prev_voltage * BATTERY_DIP) {
         RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL));
 	syslog(LOG_WARNING, "%s voltage dip %.2f", __FUNCTION__, battery_msg.voltage);
