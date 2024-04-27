@@ -14,6 +14,7 @@
 #include <Arduino.h>
 #include <micro_ros_platformio.h>
 #include <stdio.h>
+#include <i2cdetect.h>
 
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
@@ -499,15 +500,14 @@ void setup()
     esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
     esp_task_wdt_add(NULL); //add current thread to WDT watch
 #endif
+    initWifis();
+    initOta();
+    i2cdetect();  // default range from 0x03 to 0x77
     initPwm();
     motor1_controller.begin();
     motor2_controller.begin();
     motor3_controller.begin();
     motor4_controller.begin();
-
-    initWifis();
-    initOta();
-
     bool imu_ok = imu.init();
     if (!imu_ok) // take IMU failure as fatal
     {

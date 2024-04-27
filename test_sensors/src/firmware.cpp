@@ -14,6 +14,7 @@
 #include <Arduino.h>
 #include <micro_ros_platformio.h>
 #include <stdio.h>
+#include <i2cdetect.h>
 
 #include <nav_msgs/msg/odometry.h>
 #include <sensor_msgs/msg/imu.h>
@@ -64,10 +65,10 @@ void setup()
     BOARD_INIT;
 #endif
 
-    initPwm();
     initWifis();
     initOta();
-
+    i2cdetect();  // default range from 0x03 to 0x77
+    initPwm();
     imu.init();
     mag.init();
     initBattery();
