@@ -516,7 +516,8 @@ void setup()
         while (1)
         {
             flashLED(3); // flash 3 times
-        	runOta();
+            runWifis();
+            runOta();
         }
     }
     mag.init();
