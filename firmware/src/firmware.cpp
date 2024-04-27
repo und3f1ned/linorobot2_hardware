@@ -389,7 +389,12 @@ bool createEntities()
         &imu_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+	// if we have magnetomter, use imu/data_raw for madgwick filter
+#ifndef USE_FAKE_MAG
+        TOPIC_PREFIX "imu/data_raw"
+#else
         TOPIC_PREFIX "imu/data"
+#endif
     ));
 #ifndef USE_FAKE_MAG
     RCCHECK(rclc_publisher_init_default(
