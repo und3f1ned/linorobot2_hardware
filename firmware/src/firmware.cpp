@@ -85,9 +85,6 @@ static inline void set_microros_net_transports(IPAddress agent_ip, uint16_t agen
 #ifndef BATTERY_TIMER
 #define BATTERY_TIMER 2000
 #endif
-#ifndef BATTERY_DIP
-#define BATTERY_DIP 0.98
-#endif
 
 #ifndef RCCHECK
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){rclErrorLoop();}}
@@ -340,6 +337,7 @@ void publishData()
 #endif
     RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
 #if defined(BATTERY_PIN) || defined(USE_INA219)
+#ifdef BATTERY_DIP
     battery_msg = getBattery();
     battery_msg.header.stamp.sec = time_stamp.tv_sec;
     battery_msg.header.stamp.nanosec = time_stamp.tv_nsec;
@@ -351,6 +349,13 @@ void publishData()
     if (skip_dip) skip_dip--;
     battery_msg.voltage = prev_voltage = battery_msg.voltage * 0.01 + prev_voltage * 0.99;
     EXECUTE_EVERY_N_MS(BATTERY_TIMER, RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL)));
+#else
+    EXECUTE_EVERY_N_MS(BATTERY_TIMER, {
+        battery_msg = getBattery();
+        battery_msg.header.stamp.sec = time_stamp.tv_sec;
+        battery_msg.header.stamp.nanosec = time_stamp.tv_nsec;
+	RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL)) }); 
+#endif
 #endif
 }
 

@@ -211,6 +211,7 @@ ROBOT ORIENTATION
 // 3.3V ref, 12 bits ADC, 33k + 10k voltage divider
 #define BATTERY_ADJUST(v) ((v) * (3.3 / 4096 * (33 + 10) / 10))
 #define USE_INA219
+#define BATTERY_DIP 0.98
 // #define TRIG_PIN 31 // ultrasonic sensor HC-SR04
 // #define ECHO_PIN 32
 #define USE_SHORT_BRAKE // for shorter stopping distance
