@@ -37,7 +37,7 @@
 // #define USE_HMC5883L_MAG
 // #define USE_AK8963_MAG
 // #define USE_AK8975_MAG
-// #define USE_AK09918_MAG // disable mag msg to reduce serial traffic
+#define USE_AK09918_MAG
 // #define USE_QMC5883L_MAG
 // #define MAG_BIAS { 0, 0, 0 }
 // #define IMU_TWEAK {}
