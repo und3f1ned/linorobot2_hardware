@@ -46,6 +46,8 @@
 #define BAUDRATE 115200
 #endif
 
+// #define DEBUG
+
 nav_msgs__msg__Odometry odom_msg;
 sensor_msgs__msg__Imu imu_msg;
 sensor_msgs__msg__MagneticField mag_msg;
@@ -120,13 +122,14 @@ void setup()
     delay(2000);
 }
 
+unsigned runs = 12;
 const unsigned ticks = 20;
 const float dt = ticks * 0.001;
 const unsigned run_time = 1000; // 1s
 const unsigned buf_size = run_time / ticks * 4;
 Kinematics::velocities buf[buf_size];
 float batt[buf_size];
-float imu_max_acc = 0, imu_min_acc = 0;
+float imu_max_acc_x, imu_min_acc_x;
 unsigned idx = 0;
 void record(unsigned n) {
     unsigned i;
@@ -138,8 +141,8 @@ void record(unsigned n) {
         imu_msg = imu.getData();
         battery_msg = getBattery();
         float imu_acc_x = imu_msg.linear_acceleration.x;
-        if (imu_acc_x > imu_max_acc) imu_max_acc = imu_acc_x;
-        if (imu_acc_x < imu_min_acc) imu_min_acc = imu_acc_x;
+        if (imu_acc_x > imu_max_acc_x) imu_max_acc_x = imu_acc_x;
+        if (imu_acc_x < imu_min_acc_x) imu_min_acc_x = imu_acc_x;
 
         if (idx < buf_size) {
             buf[idx] = kinematics.getVelocities(rpm1, rpm2, rpm3, rpm4);
@@ -152,61 +155,102 @@ void record(unsigned n) {
 }
 
 void dump_record(void) {
-    float max_vel = 0, min_vel = 0, max_acc = 0, min_acc = 0;
+    float max_vel_x = 0, min_vel_x = 0, max_acc_x = 0, min_acc_x = 0;
+    float max_vel_y = 0, min_vel_y = 0, max_acc_y = 0, min_acc_y = 0;
+    float max_vel_z = 0, min_vel_z = 0, max_acc_z = 0, min_acc_z = 0;
     float dist = 0;
+    float avg_batt = 0, min_batt = batt[0];
     for (idx = 0; idx < buf_size; idx++) {
         float vel_x = buf[idx].linear_x;
         float vel_y = buf[idx].linear_y;
         float vel_z = buf[idx].angular_z;
-        if (vel_x > max_vel) max_vel = vel_x;
-        if (vel_x < min_vel) min_vel = vel_x;
+        if (vel_x > max_vel_x) max_vel_x = vel_x;
+        if (vel_x < min_vel_x) min_vel_x = vel_x;
+        if (vel_y > max_vel_y) max_vel_y = vel_y;
+        if (vel_y < min_vel_y) min_vel_y = vel_y;
+        if (vel_z > max_vel_z) max_vel_z = vel_z;
+        if (vel_z < min_vel_z) min_vel_z = vel_z;
+	if (min_batt > batt[idx]) min_batt = batt[idx];
+	avg_batt += batt[idx];
+#ifdef DEBUG
         Serial.printf("%04d VEL %6.2f %6.2f m/s  %6.2f rad/s BAT %5.2fV\n",
             idx, vel_x, vel_y, vel_z, batt[idx]);
         syslog(LOG_INFO, "%04d VEL %6.2f %6.2f m/s  %6.2f rad BAT %5.2fV/s",
             idx, vel_x, vel_y, vel_z, batt[idx]);
+#endif
     }
     for (idx = 0; idx < buf_size; idx++) {
         unsigned prev = idx ? (idx -1) : 0;
         float acc_x = (buf[idx].linear_x - buf[prev].linear_x) / dt;
         float acc_y = (buf[idx].linear_y - buf[prev].linear_y) / dt;
         float acc_z = (buf[idx].angular_z - buf[prev].angular_z) / dt;
-        if (acc_x > max_acc) max_acc = acc_x;
-        if (acc_x < min_acc) min_acc = acc_x;
+        if (acc_x > max_acc_x) max_acc_x = acc_x;
+        if (acc_x < min_acc_x) min_acc_x = acc_x;
+        if (acc_y > max_acc_y) max_acc_y = acc_y;
+        if (acc_y < min_acc_y) min_acc_y = acc_y;
+        if (acc_z > max_acc_z) max_acc_z = acc_z;
+        if (acc_z < min_acc_z) min_acc_z = acc_z;
+#ifdef DEBUG
         Serial.printf("%04d ACC %6.2f %6.2f m/s2 %6.2f rad/s2 BAT %5.2fV\n",
             idx, acc_x, acc_y, acc_z, batt[idx]);
         syslog(LOG_INFO, "%04d ACC %6.2f %6.2f m/s2 %6.2f rad/s2 BAT %5.2fV",
             idx, acc_x, acc_y, acc_z, batt[idx]);
+#endif
     }
-    for (idx = buf_size / 4; idx < buf_size / 2; idx++)
-        dist += buf[idx].linear_x * dt;
-    for (idx = 0; idx < buf_size; idx++) {
-        if (buf[idx].linear_x > max_vel * 0.9) break;
+    if (runs & 1) {
+        for (idx = buf_size / 4; idx < buf_size / 2; idx++)
+            dist += buf[idx].linear_x * dt;
+        for (idx = 0; idx < buf_size / 4; idx++)
+            if (buf[idx].linear_x > max_vel_x * 0.9) break;
+    } else {
+        for (idx = buf_size / 4; idx < buf_size / 2; idx++)
+	    dist += buf[idx].angular_z * dt;
+        for (idx = 0; idx < buf_size / 4; idx++)
+            if (buf[idx].angular_z > max_vel_z * 0.9) break;
     }
-    Serial.printf("MAX VEL %6.2f %6.2f m/s\n", max_vel, min_vel);
-    Serial.printf("MAX ACC %6.2f %6.2f m/s2\n", max_acc, min_acc);
-    Serial.printf("IMU ACC %6.2f %6.2f m/s2\n", imu_max_acc, imu_min_acc);
+    avg_batt /= buf_size;
+
+    Serial.printf("MAX VEL %6.2f %6.2f m/s  %6.2f rad/s\n",
+	max_vel_x, max_vel_y, max_vel_z);
+    Serial.printf("MIN VEL %6.2f %6.2f m/s  %6.2f rad/s\n",
+	min_vel_x, min_vel_y, min_vel_z);
+    Serial.printf("MAX ACC %6.2f %6.2f m/s2  %6.2f rad/s2\n",
+	max_acc_x, max_acc_y, max_acc_z);
+    Serial.printf("MIN ACC %6.2f %6.2f m/s2  %6.2f rad/s2\n",
+	min_acc_x, min_acc_y, min_acc_z);
+    Serial.printf("IMU ACC %6.2f %6.2f m/s2\n", imu_max_acc_x, imu_min_acc_x);
     Serial.printf("time to 0.9x max vel %6.2f sec\n", idx * dt);
-    Serial.printf("distance to stop %6.2f m\n", dist);
-    syslog(LOG_INFO, "MAX VEL %6.2f %6.2f m/s", max_vel, min_vel);
-    syslog(LOG_INFO, "MAX ACC %6.2f %6.2f m/s2", max_acc, min_acc);
-    syslog(LOG_INFO, "IMU ACC %6.2f %6.2f m/s2", imu_max_acc, imu_min_acc);
+    Serial.printf("distance to stop %6.2f %s\n", dist, (runs & 1) ? "m" : "rad");
+    Serial.printf("BAT %5.2fV MIN %5.2fV\n", avg_batt, min_batt);
+
+    syslog(LOG_INFO, "MAX VEL %6.2f %6.2f m/s  %6.2f rad/s",
+	max_vel_x, max_vel_y, max_vel_z);
+    syslog(LOG_INFO, "MIN VEL %6.2f %6.2f m/s  %6.2f rad/s",
+	min_vel_x, min_vel_y, min_vel_z);
+    syslog(LOG_INFO, "MAX ACC %6.2f %6.2f m/s2  %6.2f rad/s2",
+	max_acc_x, max_acc_y, max_acc_z);
+    syslog(LOG_INFO, "MIN ACC %6.2f %6.2f m/s2  %6.2f rad/s2",
+	min_acc_x, min_acc_y, min_acc_z);
+    syslog(LOG_INFO, "IMU ACC %6.2f %6.2f m/s2", imu_max_acc_x, imu_min_acc_x);
     syslog(LOG_INFO, "time to 0.9x max vel %6.2f sec", idx * dt);
-    syslog(LOG_INFO, "distance to stop %6.2f m", dist);
+    syslog(LOG_INFO, "distance to stop %6.2f %s\n", dist, (runs & 1) ? "m" : "rad");
+    syslog(LOG_INFO, "BAT %5.2fV MIN %5.2fV\n", avg_batt, min_batt);
 }
 
-unsigned runs = 6;
 void loop() {
     float pwm_max = PWM_MAX;
     float pwm_min = -pwm_max;
 
-    while (runs) {
+    while (runs > 0) {
         runs--;
         idx = 0;
-        // full speed forward
+        imu_max_acc_x = 0;
+        imu_min_acc_x = 0;
+        // full speed forward / spin counterclockwise
         digitalWrite(LED_PIN, HIGH);
-        motor1_controller.spin(pwm_max);
+        motor1_controller.spin((runs & 1) ? pwm_max : pwm_min);
         motor2_controller.spin(pwm_max);
-        motor3_controller.spin(pwm_max);
+        motor3_controller.spin((runs & 1) ? pwm_max : pwm_min);
         motor4_controller.spin(pwm_max);
         record(run_time / ticks);
         // stop
@@ -216,11 +260,11 @@ void loop() {
         motor3_controller.spin(0);
         motor4_controller.spin(0);
         record(run_time / ticks);
-        // full speed backward
+        // full speed backward / spin clockwise
         digitalWrite(LED_PIN, HIGH);
-        motor1_controller.spin(pwm_min);
+        motor1_controller.spin((runs & 1) ? pwm_min : pwm_max);
         motor2_controller.spin(pwm_min);
-        motor3_controller.spin(pwm_min);
+        motor3_controller.spin((runs & 1) ? pwm_min : pwm_max);
         motor4_controller.spin(pwm_min);
         record(run_time / ticks);
         // stop
@@ -231,10 +275,10 @@ void loop() {
         motor4_controller.spin(0);
         record(run_time / ticks);
         // print result
-        dump_record();
         Serial.printf("MAX PWM %6.1f %6.1f\n", pwm_max, pwm_min);
         syslog(LOG_INFO, "MAX PWM %6.1f %6.1f", pwm_max, pwm_min);
-        if ((runs & 1) == 0) {
+        dump_record();
+        if ((runs & 3) == 0) {
             pwm_max /= 2;
             pwm_min /= 2;
         }
