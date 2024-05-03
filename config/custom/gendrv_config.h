@@ -23,9 +23,9 @@
 // #define LINO_BASE MECANUM               // Mecanum drive robot
 
 //uncomment the motor driver you're using
-#define USE_GENERIC_2_IN_MOTOR_DRIVER      // Motor drivers with 2 Direction Pins(INA, INB) and 1 PWM(ENABLE) pin ie. L298, L293, VNH5019
+// #define USE_GENERIC_2_IN_MOTOR_DRIVER      // Motor drivers with 2 Direction Pins(INA, INB) and 1 PWM(ENABLE) pin ie. L298, L293, VNH5019
 // #define USE_GENERIC_1_IN_MOTOR_DRIVER   // Motor drivers with 1 Direction Pin(INA) and 1 PWM(ENABLE) pin.
-// #define USE_BTS7960_MOTOR_DRIVER        // BTS7970 Motor Driver
+#define USE_BTS7960_MOTOR_DRIVER        // BTS7970 Motor Driver
 // #define USE_ESC_MOTOR_DRIVER            // Motor ESC for brushless motors
 
 //uncomment the IMU you're using
@@ -139,21 +139,21 @@ ROBOT ORIENTATION
 #endif
 
 #ifdef USE_BTS7960_MOTOR_DRIVER
-  #define MOTOR1_PWM -1 //DON'T TOUCH THIS! This is just a placeholder
-  #define MOTOR1_IN_A 21
-  #define MOTOR1_IN_B 20
+  #define MOTOR1_PWM 25 //DON'T TOUCH THIS! This is just a placeholder
+  #define MOTOR1_IN_A 17
+  #define MOTOR1_IN_B 21
 
-  #define MOTOR2_PWM -1 //DON'T TOUCH THIS! This is just a placeholder
-  #define MOTOR2_IN_A 5
-  #define MOTOR2_IN_B 6
+  #define MOTOR2_PWM 26 //DON'T TOUCH THIS! This is just a placeholder
+  #define MOTOR2_IN_A 23
+  #define MOTOR2_IN_B 22
 
   #define MOTOR3_PWM -1 //DON'T TOUCH THIS! This is just a placeholder
-  #define MOTOR3_IN_A 22
-  #define MOTOR3_IN_B 23
+  #define MOTOR3_IN_A -1
+  #define MOTOR3_IN_B -1
 
   #define MOTOR4_PWM -1 //DON'T TOUCH THIS! This is just a placeholder
-  #define MOTOR4_IN_A 4
-  #define MOTOR4_IN_B 3
+  #define MOTOR4_IN_A -1
+  #define MOTOR4_IN_B -1
 
   #define PWM_MAX pow(2, PWM_BITS) - 1
   #define PWM_MIN -PWM_MAX
@@ -217,6 +217,10 @@ ROBOT ORIENTATION
 #define USE_SHORT_BRAKE // for shorter stopping distance
 // #define WDT_TIMEOUT 60 // Sec
 #define BOARD_INIT { \
+    pinMode(MOTOR1_PWM, OUTPUT); \
+    digitalWrite(MOTOR1_PWM, HIGH); \
+    pinMode(MOTOR2_PWM, OUTPUT); \
+    digitalWrite(MOTOR2_PWM, HIGH); \
     Wire.begin(SDA_PIN, SCL_PIN); \
     Wire.setClock(400000); \
 }
