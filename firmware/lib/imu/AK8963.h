@@ -82,8 +82,8 @@ THE SOFTWARE.
 #define AK8963_MODE_SELFTEST            0x8
 #define AK8963_MODE_FUSEROM             0xF
 
-#define AK8963_RES_14_BIT               0
-#define AK8963_RES_16_BIT               1
+#define AK8963_RES_14_BIT               0x00
+#define AK8963_RES_16_BIT               0x10
 
 #define AK8963_CNTL2_SRST_BIT           0
 
@@ -92,60 +92,18 @@ THE SOFTWARE.
 #define AK8963_I2CDIS_DISABLE           0x1B
 
 class AK8963 {
-    public:
-        AK8963();
-        AK8963(uint8_t address);
+  public:
+    AK8963();
 
-        void initialize();
-        bool testConnection();
+    // default to AK8963_CONTINUOUS_100HZ mode
+    bool initialize(uint8_t mode = AK8963_MODE_CONTINUOUS_100HZ | AK8963_RES_16_BIT);
+    bool testConnection();
+    // getHeading in I2Cdevlib
+    void getHeading(int16_t *x, int16_t *y, int16_t *z);
 
-        // WIA register
-        uint8_t getDeviceID();
-
-        // INFO register
-        uint8_t getInfo();
-
-        // ST1 register
-        bool getDataReady();
-        bool getDataOverrun();
-
-        // H* registers
-        void getHeading(int16_t *x, int16_t *y, int16_t *z);
-        int16_t getHeadingX();
-        int16_t getHeadingY();
-        int16_t getHeadingZ();
-
-        // ST2 register
-        bool getOverflowStatus();
-        bool getOutputBit();
-
-        // CNTL1 register
-        uint8_t getMode();
-        void setMode(uint8_t mode);
-        uint8_t getResolution();
-        void setResolution(uint8_t resolution);
-        void reset();
-
-        // ASTC register
-        void setSelfTest(bool enabled);
-
-        // I2CDIS
-        void disableI2C(); // um, why...?
-
-        // ASA* registers
-        void getAdjustment(int8_t *x, int8_t *y, int8_t *z);
-        void setAdjustment(int8_t x, int8_t y, int8_t z);
-        uint8_t getAdjustmentX();
-        void setAdjustmentX(uint8_t x);
-        uint8_t getAdjustmentY();
-        void setAdjustmentY(uint8_t y);
-        uint8_t getAdjustmentZ();
-        void setAdjustmentZ(uint8_t z);
-
-    private:
-        uint8_t devAddr;
-        uint8_t buffer[6];
-        uint8_t mode;
+  private:
+    uint8_t _addr;
+    uint8_t _buffer[16];
 };
 
 #endif /* _AK8963_H_ */
