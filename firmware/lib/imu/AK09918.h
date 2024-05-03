@@ -101,36 +101,12 @@ class AK09918 {
 
     // default to AK09918_CONTINUOUS_100HZ mode
     AK09918_err_type_t initialize(AK09918_mode_type_t mode = AK09918_CONTINUOUS_100HZ);
-    // At AK09918_CONTINUOUS_** mode, check if data is ready to read
-    AK09918_err_type_t isDataReady();
-    // At AK09918_CONTINUOUS_** mode, check if data is skipped
-    AK09918_err_type_t isDataSkip();
-    // Get magnet data in uT
-    AK09918_err_type_t getData(int32_t* axis_x, int32_t* axis_y, int32_t* axis_z);
-    // Get raw I2C magnet data
-    AK09918_err_type_t getRawData(int32_t* axis_x, int32_t* axis_y, int32_t* axis_z);
+    bool testConnection();
     // getHeading in I2Cdevlib
     void getHeading(int16_t *x, int16_t *y, int16_t *z);
 
-    // Return the working mode of AK09918
-    AK09918_mode_type_t getMode();
-    // Switch the working mode of AK09918
-    AK09918_err_type_t switchMode(AK09918_mode_type_t mode);
-    // Start a self-test, if pass, return AK09918_ERR_OK
-    AK09918_err_type_t selfTest();
-    // Reset AK09918
-    AK09918_err_type_t reset();
-    // Get details of AK09918_err_type_t
-    String strError(AK09918_err_type_t err);
-    // Get device ID
-    uint16_t getDeviceID();
-
-
-
   private:
-    uint8_t _getRawMode();
     uint8_t _addr;
-    AK09918_mode_type_t _mode;
     uint8_t _buffer[16];
 
 };
