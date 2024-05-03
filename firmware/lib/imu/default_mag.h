@@ -65,9 +65,9 @@ class HMC5883LMAG: public MAGInterface
 
             magnetometer_.getHeading(&ax, &ay, &az);
 
-            mag_.x = ax;
-            mag_.y = ay;
-            mag_.z = az;
+            mag_.x = ax * 0.0001 / 1090;
+            mag_.y = ay * 0.0001 / 1090;
+            mag_.z = az * 0.0001 / 1090;
 
             return mag_;
         }
@@ -111,9 +111,9 @@ class AK8963MAG: public MAGInterface
 
             magnetometer_.getHeading(&ax, &ay, &az);
 
-            mag_.x = ax;
-            mag_.y = ay;
-            mag_.z = az;
+            mag_.x = ax * 0.00000015;
+            mag_.y = ay * 0.00000015;
+            mag_.z = az * 0.00000015;
 
             return mag_;
         }
@@ -157,9 +157,9 @@ class AK8975MAG: public MAGInterface
 
             magnetometer_.getHeading(&ax, &ay, &az);
 
-            mag_.x = ax;
-            mag_.y = ay;
-            mag_.z = az;
+            mag_.x = ax * 0.0000003;
+            mag_.y = ay * 0.0000003;
+            mag_.z = az * 0.0000003;
 
             return mag_;
         }
@@ -202,9 +202,9 @@ class AK09918MAG: public MAGInterface
 
             magnetometer_.getHeading(&ax, &ay, &az);
 
-            mag_.x = ax;
-            mag_.y = ay;
-            mag_.z = az;
+            mag_.x = ax * 0.00000015;
+            mag_.y = ay * 0.00000015;
+            mag_.z = az * 0.00000015;
 
             return mag_;
         }
@@ -240,12 +240,12 @@ class QMC5883LMAG: public MAGInterface
         {
             // here you can override readMagnetometer function and use the sensor's driver API
             // to grab the data from magnetometer and return as a Vector3 object
-            int16_t ax, ay, az;
+            int16_t ax, ay, az, tt;
 
-            magnetometer_.getHeading(&ax, &ay, &az);
-            mag_.x = ax;
-            mag_.y = ay;
-            mag_.z = az;
+            magnetometer_.readRaw(&ax, &ay, &az, &tt); 
+            mag_.x = ax * 0.0001 / 12000;
+            mag_.y = ay * 0.0001 / 12000;
+            mag_.z = az * 0.0001 / 12000;
 
             return mag_;
         }
