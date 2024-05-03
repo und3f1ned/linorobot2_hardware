@@ -96,14 +96,14 @@ void loop() {
 	   " BAT %5.2fV RANGE %5.2fm\n",
 	   imu_msg.linear_acceleration.x, imu_msg.linear_acceleration.y, imu_msg.linear_acceleration.z,
 	   imu_msg.angular_velocity.x, imu_msg.angular_velocity.y, imu_msg.angular_velocity.x,
-	   mag_msg.magnetic_field.x, mag_msg.magnetic_field.y, mag_msg.magnetic_field.z,
-	   battery_msg.voltage, range_msg.range);
+	   mag_msg.magnetic_field.x * 1000000, mag_msg.magnetic_field.y * 1000000,
+	   mag_msg.magnetic_field.z * 1000000, battery_msg.voltage, range_msg.range);
     syslog(LOG_INFO, "ACC %5.2f %5.2f %5.2f GYR %5.2f %5.2f %5.2f MAG %5.2f %5.2f %5.2f\n"
 	   " BAT %5.2fV RANGE %5.2fm\n",
 	   imu_msg.linear_acceleration.x, imu_msg.linear_acceleration.y, imu_msg.linear_acceleration.z,
 	   imu_msg.angular_velocity.x, imu_msg.angular_velocity.y, imu_msg.angular_velocity.x,
-	   mag_msg.magnetic_field.x, mag_msg.magnetic_field.y, mag_msg.magnetic_field.z,
-	   battery_msg.voltage, range_msg.range);
+	   mag_msg.magnetic_field.x * 1000000, mag_msg.magnetic_field.y * 1000000,
+	   mag_msg.magnetic_field.z * 1000000, battery_msg.voltage, range_msg.range);
     runWifis();
     runOta();
 }
