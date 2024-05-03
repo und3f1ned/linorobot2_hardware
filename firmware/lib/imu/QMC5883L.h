@@ -20,10 +20,7 @@ public:
   void setSamplingRate( int rate );
   void setRange( int range );
   void setOversampling( int ovl );
-  void initialize() {
-    init();
-    setSamplingRate(200);
-  }
+  void initialize() { init(); }
   
 private:
   int16_t xhigh, xlow;

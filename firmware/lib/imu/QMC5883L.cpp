@@ -144,7 +144,7 @@ void QMC5883L::init() {
   addr = QMC5883L_ADDR;
   oversampling = QMC5883L_CONFIG_OS512;
   range = QMC5883L_CONFIG_2GAUSS;
-  rate = QMC5883L_CONFIG_50HZ;
+  rate = QMC5883L_CONFIG_200HZ;
   mode = QMC5883L_CONFIG_CONT;
   reset();
 }
