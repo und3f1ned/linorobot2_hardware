@@ -530,7 +530,18 @@ void setup()
             runOta();
         }
     }
-    mag.init();
+    bool mag_ok = mag.init();
+    if (!mag_ok) // take IMU failure as fatal
+    {
+        Serial.println("MAG init failed");
+        syslog(LOG_INFO, "%s MAG init failed %lu", __FUNCTION__, millis());
+        while (1)
+        {
+            flashLED(4); // flash 4 times
+            runWifis();
+            runOta();
+        }
+    }
     initBattery();
     initRange();
     initLidar(); // after wifi connected
