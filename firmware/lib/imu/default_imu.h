@@ -126,6 +126,8 @@ class MPU6050IMU: public IMUInterface
             if(!ret)
                 return false;
 
+            accelgyro_.CalibrateAccel();
+            accelgyro_.CalibrateGyro();
             return true;
         }
 
