@@ -308,14 +308,15 @@ void publishData()
     static unsigned skip_dip = 0;
     odom_msg = odometry.getData();
     imu_msg = imu.getData();
-#ifndef USE_FAKE_MAG
+#ifdef USE_FAKE_IMU
+    imu_msg.angular_velocity.z = odom_msg.twist.twist.angular.z;
+#endif
     mag_msg = mag.getData();
 #ifdef MAG_BIAS
     const float mag_bias[3] = MAG_BIAS;
     mag_msg.magnetic_field.x -= mag_bias[0];
     mag_msg.magnetic_field.y -= mag_bias[1];
     mag_msg.magnetic_field.z -= mag_bias[2];
-#endif
 #endif
 
     struct timespec time_stamp = getTime();
