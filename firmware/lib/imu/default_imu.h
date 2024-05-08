@@ -158,61 +158,6 @@ class MPU6050IMU: public IMUInterface
         }
 };
 
-class MPU9150IMU: public IMUInterface 
-{
-    private:
-        const float accel_scale_ = 1 / 16384.0;
-        const float gyro_scale_ = 1 / 131.0;
-
-        MPU9150 accelgyro_;
-
-        geometry_msgs__msg__Vector3 accel_;
-        geometry_msgs__msg__Vector3 gyro_;
-
-    public:
-        MPU9150IMU()
-        {
-        }
-
-        bool startSensor() override
-        {
-            Wire.begin();
-            bool ret;
-            accelgyro_.initialize();
-            ret = accelgyro_.testConnection();
-            if(!ret)
-                return false;
-
-            return true;
-        }
-
-        geometry_msgs__msg__Vector3 readAccelerometer() override
-        {
-            int16_t ax, ay, az;
-            
-            accelgyro_.getAcceleration(&ax, &ay, &az);
-
-            accel_.x = ax * (double) accel_scale_ * g_to_accel_;
-            accel_.y = ay * (double) accel_scale_ * g_to_accel_;
-            accel_.z = az * (double) accel_scale_ * g_to_accel_;
-
-            return accel_;
-        }
-
-        geometry_msgs__msg__Vector3 readGyroscope() override
-        {
-            int16_t gx, gy, gz;
-
-            accelgyro_.getRotation(&gx, &gy, &gz);
-
-            gyro_.x = gx * (double) gyro_scale_ * DEG_TO_RAD;
-            gyro_.y = gy * (double) gyro_scale_ * DEG_TO_RAD;
-            gyro_.z = gz * (double) gyro_scale_ * DEG_TO_RAD;
-
-            return gyro_;
-        }
-};
-
 class MPU9250IMU: public IMUInterface 
 {
     private:

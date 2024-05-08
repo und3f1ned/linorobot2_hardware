@@ -24,12 +24,8 @@
     #define IMU GY85IMU
 #endif
 
-#ifdef USE_MPU6050_IMU
+#if defined(USE_MPU6050_IMU) || defined(USE_MPU9150_IMU)
     #define IMU MPU6050IMU
-#endif
-
-#ifdef USE_MPU9150_IMU
-    #define IMU MPU9150IMU
 #endif
 
 #ifdef USE_MPU9250_IMU
