@@ -15,6 +15,10 @@
 #ifndef IMU_CONFIG_H
 #define IMU_CONFIG_H
 
+#if defined(USE_MPU9150_IMU) && !defined(USE_MPU6050_IMU)
+#define USE_MPU6050_IMU
+#endif
+
 // include the header of your new driver here similar to default_imu.h
 #include "default_imu.h"
 
@@ -24,7 +28,7 @@
     #define IMU GY85IMU
 #endif
 
-#if defined(USE_MPU6050_IMU) || defined(USE_MPU9150_IMU)
+#ifdef USE_MPU6050_IMU
     #define IMU MPU6050IMU
 #endif
 

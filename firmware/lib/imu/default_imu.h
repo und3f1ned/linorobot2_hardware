@@ -24,7 +24,6 @@
 #include "ITG3200.h"
 #include "HMC5883L.h"
 #include "MPU6050.h"
-#include "MPU9150.h"
 #include "MPU9250.h"
 #include "QMI8658.h"
 
