@@ -216,7 +216,7 @@ class QMC5883LMAG: public MAGInterface
         //constants specific to the sensor
 
         // driver objects to be used
-        QMC5883L magnetometer_;
+        QMC5883L compass;
 
         // returned vector for sensor reading
         geometry_msgs__msg__Vector3 mag_;
@@ -231,7 +231,10 @@ class QMC5883LMAG: public MAGInterface
             // here you can override startSensor() function and use the sensor's driver API
             // to initialize and test the sensor's connection during boot time
             Wire.begin();
-            magnetometer_.initialize();
+            compass.init();
+            compass.setSamplingRate(200);
+            compass.setRange(2);
+            compass.setOversampling(512);
 
             return true;
         }
@@ -242,7 +245,7 @@ class QMC5883LMAG: public MAGInterface
             // to grab the data from magnetometer and return as a Vector3 object
             int16_t ax, ay, az, tt;
 
-            magnetometer_.readRaw(&ax, &ay, &az, &tt); 
+            compass.readRaw(&ax, &ay, &az, &tt); 
             mag_.x = ax * 0.0001 / 12000;
             mag_.y = ay * 0.0001 / 12000;
             mag_.z = az * 0.0001 / 12000;
