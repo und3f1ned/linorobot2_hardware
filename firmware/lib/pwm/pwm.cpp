@@ -2,51 +2,65 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 #include "config.h"
+#include "pwm.h"
 
 #ifdef PCA_BASE
 // called this way, it uses the default address 0x40
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+Adafruit_PWMServoDriver pca = Adafruit_PWMServoDriver();
 // you can also call it with a different address you want
 //Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x41);
 // you can also call it with a different address and I2C interface
 //Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40, Wire);
 #endif
 
-float pwm_freq = PWM_FREQUENCY;
-
-void setPWMFreq(float freq)
-{
-    pwm_freq = freq;
-#ifndef TEENSYDUINO
-#ifdef PICO
-    analogWriteFreq(freq);
-#else
-    analogWriteFrequency(freq);
-#endif
-#endif
-#ifdef PCA_BASE
-    pwm.setPWMFreq(freq);  // Set to whatever you like, we don't use it in this demo!
-#endif
-}
-
 void initPwm()
 {
 #ifdef PCA_BASE
-    pwm.begin();
+    pca.begin();
+    pca.setPWMFreq(SERVO_FREQ);
 #endif
-    setPWMFreq(PWM_FREQUENCY);
-    analogWriteResolution(PWM_BITS);
 }
 
-void setPin(int pin, int value)
+void setupPwm(int pin, float freq, int bits)
+{
+    if (pin < 0) return;
+#ifdef PCA_BASE
+    if (pin < PCA_BASE)
+#endif
+    {
+        pinMode(pin, OUTPUT);
+#ifdef ESP32 // for arduino-esp32 v2 only, use ledcAttach on v3
+        analogWriteFrequency(freq);
+        analogWriteResolution(bits);
+        analogWrite(pin, 0); // run ledcSetup and ledcAttachPin
+#elif defined(PICO)
+        analogWriteFreq(freq);
+        analogWriteResolution(bits);
+#elif defined(TEENSYDUINO)
+        analogWriteFrequency(pin, freq);
+        analogWriteResolution(bits);
+#else
+        analogWriteFrequency(freq);
+        analogWriteResolution(bits);
+#endif
+    }
+}
+
+void setPwm(int pin, int value)
 {
     if (pin < 0) return;
 #ifdef PCA_BASE
     if (pin >= PCA_BASE)
-        pwm.setPin(pin - PCA_BASE, value);
-#endif
+        pca.setPin(pin - PCA_BASE, value);
     else
+#endif
+    {
+#ifdef ESP32 // for arduino-esp32 v2 only
+        ledcWrite(analogGetChannel(pin), value); // do not run ledcSetup and ledcAttachPin
+#else
         analogWrite(pin, value);
+#endif
+    }
 }
 
 void setLevel(int pin, int value)
@@ -54,15 +68,18 @@ void setLevel(int pin, int value)
     if (pin < 0) return;
 #ifdef PCA_BASE
     if (pin >= PCA_BASE)
-        pwm.setPin(pin - PCA_BASE, value ? ((1 << PWM_BITS) - 1) : 0);
-#endif
+        pca.setPin(pin - PCA_BASE, value ? ((1 << PWM_BITS) - 1) : 0);
     else
+#endif
+    {
         digitalWrite(pin, value);
+    }
 }
 
-void setPulse(int pin, int value)
+// for servo, micro-second
+void setMicro(int pin, int value)
 {
     if (pin < 0) return;
-    int pulse = value / ((1000000 / pwm_freq) / (1 << PWM_BITS));
-    setPin(pin, pulse);
+    int pulse = value * (float) SERVO_FREQ * (1 << SERVO_BITS) / 1000000;
+    setPwm(pin, pulse);
 }

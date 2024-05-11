@@ -69,6 +69,8 @@ ROBOT ORIENTATION
 #define LR_WHEELS_DISTANCE 0.224            // distance between left and right wheels
 #define PWM_BITS 10                         // PWM Resolution of the microcontroller
 #define PWM_FREQUENCY 20000                 // PWM Frequency
+#define SERVO_BITS 12                       // Servo PWM resolution
+#define SERVO_FREQ 50                       // Servo PWM frequency
 
 // INVERT ENCODER COUNTS
 #define MOTOR1_ENCODER_INV false
