@@ -19,11 +19,15 @@
 #include <sensor_msgs/msg/magnetic_field.h>
 #include "config.h"
 
+#ifndef MAG_COV
+#define MAG_COV { 0.00001, 0.00001, 0.00001 }
+#endif
+
 class MAGInterface
 {
     protected:
         sensor_msgs__msg__MagneticField mag_msg_;
-        float mag_cov_ = 0.00001;
+        const float mag_cov[3] = MAG_COV;
 
     public:
         MAGInterface()
@@ -43,9 +47,9 @@ class MAGInterface
         sensor_msgs__msg__MagneticField getData()
         {
             mag_msg_.magnetic_field = readMagnetometer();
-            mag_msg_.magnetic_field_covariance[0] = mag_cov_;
-            mag_msg_.magnetic_field_covariance[4] = mag_cov_;
-            mag_msg_.magnetic_field_covariance[8] = mag_cov_;
+            mag_msg_.magnetic_field_covariance[0] = mag_cov[0];
+            mag_msg_.magnetic_field_covariance[4] = mag_cov[1];
+            mag_msg_.magnetic_field_covariance[8] = mag_cov[2];
 
 #ifdef MAG_TWEAK
             MAG_TWEAK

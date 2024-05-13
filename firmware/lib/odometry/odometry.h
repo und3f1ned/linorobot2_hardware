@@ -19,6 +19,14 @@
 #include <micro_ros_utilities/type_utilities.h>
 #include <micro_ros_utilities/string_utilities.h>
 #include <nav_msgs/msg/odometry.h>
+#include "config.h"
+
+#ifndef POSE_COV
+#define POSE_COV { 0.0001, 0.0001, 0, 0, 0, 0.0001 }
+#endif
+#ifndef TWIST_COV
+#define TWIST_COV { 0.00001, 0.00001, 0, 0, 0, 0.00001 }
+#endif
 
 class Odometry
 {

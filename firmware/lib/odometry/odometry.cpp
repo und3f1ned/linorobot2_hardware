@@ -30,6 +30,8 @@ void Odometry::update(float vel_dt, float linear_vel_x, float linear_vel_y, floa
     float sin_h = sin(heading_);
     float delta_x = (linear_vel_x * cos_h - linear_vel_y * sin_h) * vel_dt; //m
     float delta_y = (linear_vel_x * sin_h + linear_vel_y * cos_h) * vel_dt; //m
+    const float pose_cov[6] = POSE_COV;
+    const float twist_cov[6] = TWIST_COV;
 
     //calculate current position of the robot
     x_pos_ += delta_x;
@@ -52,9 +54,12 @@ void Odometry::update(float vel_dt, float linear_vel_x, float linear_vel_y, floa
     odom_msg_.pose.pose.orientation.z = (double) q[3];
     odom_msg_.pose.pose.orientation.w = (double) q[0];
 
-    odom_msg_.pose.covariance[0] = 0.001;
-    odom_msg_.pose.covariance[7] = 0.001;
-    odom_msg_.pose.covariance[35] = 0.001;
+    odom_msg_.pose.covariance[0] = pose_cov[0];
+    odom_msg_.pose.covariance[7] = pose_cov[1];
+    odom_msg_.pose.covariance[14] = pose_cov[2];
+    odom_msg_.pose.covariance[21] = pose_cov[3];
+    odom_msg_.pose.covariance[28] = pose_cov[4];
+    odom_msg_.pose.covariance[35] = pose_cov[5];
 
     //linear speed from encoders
     odom_msg_.twist.twist.linear.x = linear_vel_x;
@@ -66,15 +71,18 @@ void Odometry::update(float vel_dt, float linear_vel_x, float linear_vel_y, floa
     odom_msg_.twist.twist.angular.y = 0.0;
     odom_msg_.twist.twist.angular.z = angular_vel_z;
 
-    odom_msg_.twist.covariance[0] = 0.0001;
-    odom_msg_.twist.covariance[7] = 0.0001;
-    odom_msg_.twist.covariance[35] = 0.0001;
+    odom_msg_.twist.covariance[0] = twist_cov[0];
+    odom_msg_.twist.covariance[7] = twist_cov[1];
+    odom_msg_.twist.covariance[14] = twist_cov[2];
+    odom_msg_.twist.covariance[21] = twist_cov[3];
+    odom_msg_.twist.covariance[28] = twist_cov[4];
+    odom_msg_.twist.covariance[35] = twist_cov[5];
 }
 
 nav_msgs__msg__Odometry Odometry::getData()
 {
     return odom_msg_;
-} 
+}
 
 const void Odometry::euler_to_quat(float roll, float pitch, float yaw, float* q) 
 {
