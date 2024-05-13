@@ -43,6 +43,13 @@
 // #define IMU_TWEAK {}
 // #define MAG_TWEAK {}
 
+#define ACCEL_COV { 0.01, 0.01, 0.01 }
+#define GYRO_COV { 0.001, 0.001, 0.001 }
+#define ORI_COV { 0.01, 0.01, 0.01 }
+#define MAG_COV { 1e-12, 1e-12, 1e-12 }
+#define POSE_COV { 0.001, 0.001, 0.001, 0.001, 0.001, 0.001 }
+#define TWIST_COV { 0.001, 0.001, 0.001, 0.003, 0.003, 0.003 }
+
 #define K_P 0.6                             // P constant
 #define K_I 0.8                             // I constant
 #define K_D 0.5                             // D constant
