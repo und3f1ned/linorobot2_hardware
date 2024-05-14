@@ -191,7 +191,7 @@ void rclErrorLoop()
     while(true)
     {
         flashLED(2); // flash 2 times
-    	runOta();
+        runOta();
     }
 }
 
@@ -254,16 +254,16 @@ bool syncTime()
 #if (_POSIX_TIMERS > 0)
         // Get time in milliseconds or nanoseconds
         int64_t time_ns = rmw_uros_epoch_nanos();
-	timespec tp;
-	tp.tv_sec = time_ns / 1000000000;
-	tp.tv_nsec = time_ns % 1000000000;
-	clock_settime(CLOCK_REALTIME, &tp);
+    timespec tp;
+    tp.tv_sec = time_ns / 1000000000;
+    tp.tv_nsec = time_ns % 1000000000;
+    clock_settime(CLOCK_REALTIME, &tp);
 #else
-	unsigned long long ros_time_ms = rmw_uros_epoch_millis();
-	// now we can find the difference between ROS time and uC time
-	time_offset = ros_time_ms - millis();
+    unsigned long long ros_time_ms = rmw_uros_epoch_millis();
+    // now we can find the difference between ROS time and uC time
+    time_offset = ros_time_ms - millis();
 #endif
-	return true;
+    return true;
     }
     return false;
 }
@@ -289,10 +289,10 @@ void rangeCallback(rcl_timer_t * timer, int64_t last_call_time)
     if (timer != NULL)
     {
         range_msg = getRange();
-	struct timespec time_stamp = getTime();
-	range_msg.header.stamp.sec = time_stamp.tv_sec;
-	range_msg.header.stamp.nanosec = time_stamp.tv_nsec;
-	RCSOFTCHECK(rcl_publish(&range_publisher, &range_msg, NULL));
+    struct timespec time_stamp = getTime();
+    range_msg.header.stamp.sec = time_stamp.tv_sec;
+    range_msg.header.stamp.nanosec = time_stamp.tv_nsec;
+    RCSOFTCHECK(rcl_publish(&range_publisher, &range_msg, NULL));
     }
 }
 
@@ -344,7 +344,7 @@ void publishData()
     battery_msg.header.stamp.nanosec = time_stamp.tv_nsec;
     if (!skip_dip && battery_msg.voltage > 1.0  && battery_msg.voltage < prev_voltage * BATTERY_DIP) {
         RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL));
-	syslog(LOG_WARNING, "%s voltage dip %.2f", __FUNCTION__, battery_msg.voltage);
+    syslog(LOG_WARNING, "%s voltage dip %.2f", __FUNCTION__, battery_msg.voltage);
         skip_dip = 5;
     }
     if (skip_dip) skip_dip--;
@@ -355,7 +355,7 @@ void publishData()
         battery_msg = getBattery();
         battery_msg.header.stamp.sec = time_stamp.tv_sec;
         battery_msg.header.stamp.nanosec = time_stamp.tv_nsec;
-	RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL)) }); 
+    RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL)) }); 
 #endif
 #endif
 }
@@ -390,7 +390,7 @@ bool createEntities()
         &imu_publisher,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
-	// if we have magnetomter, use imu/data_raw for madgwick filter
+    // if we have magnetomter, use imu/data_raw for madgwick filter
 #ifndef USE_FAKE_MAG
         TOPIC_PREFIX "imu/data_raw"
 #else
@@ -408,19 +408,19 @@ bool createEntities()
 #if defined(BATTERY_PIN) || defined(USE_INA219)
     // create battery pyblisher
     RCCHECK(rclc_publisher_init_default(
-	&battery_publisher,
-	&node,
-	ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, BatteryState),
-	TOPIC_PREFIX "battery"
+    &battery_publisher,
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, BatteryState),
+    TOPIC_PREFIX "battery"
     ));
 #endif
 #ifdef ECHO_PIN
     // create range pyblisher
     RCCHECK(rclc_publisher_init_default(
-	&range_publisher,
-	&node,
-	ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Range),
-	TOPIC_PREFIX "ultrasound"
+    &range_publisher,
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Range),
+    TOPIC_PREFIX "ultrasound"
     ));
 #endif
     // create twist command subscriber
