@@ -10,7 +10,7 @@
 #endif
 
 void initPwm();
-void setupPwm(int pin, float freq, int bits); // analogWriteFrequency() and analogWriteResolution()
+void setupPwm(int pin, int freq, int bits); // analogWriteFrequency() and analogWriteResolution()
 void setPwm(int pin, int value); // analogWrite()
 void setLevel(int pin, int value); // digitalWrite()
 void setMicro(int pin, int value); // writeMicroseconds()

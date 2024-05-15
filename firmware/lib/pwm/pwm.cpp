@@ -2,6 +2,7 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 #include "config.h"
+#include "syslog.h"
 #include "pwm.h"
 
 #ifdef PCA_BASE
@@ -21,7 +22,12 @@ void initPwm()
 #endif
 }
 
-void setupPwm(int pin, float freq, int bits)
+#ifdef ESP32
+static int pin_to_channel[60];
+static int next_channel = 0;
+#endif
+
+void setupPwm(int pin, int freq, int bits)
 {
     if (pin < 0) return;
 #ifdef PCA_BASE
@@ -29,10 +35,13 @@ void setupPwm(int pin, float freq, int bits)
 #endif
     {
         pinMode(pin, OUTPUT);
+        digitalWrite(pin, 0);
 #ifdef ESP32 // for arduino-esp32 v2 only, use ledcAttach on v3
-        analogWriteFrequency(freq);
-        analogWriteResolution(bits);
-        analogWrite(pin, 0); // run ledcSetup and ledcAttachPin
+        pin_to_channel[pin] = next_channel;
+        int st = ledcSetup(next_channel, freq, bits);
+        ledcAttachPin(pin, next_channel);
+        setPwm(pin, 0);
+        next_channel++;
 #elif defined(PICO)
         analogWriteFreq(freq);
         analogWriteResolution(bits);
@@ -56,7 +65,8 @@ void setPwm(int pin, int value)
 #endif
     {
 #ifdef ESP32 // for arduino-esp32 v2 only
-        ledcWrite(analogGetChannel(pin), value); // do not run ledcSetup and ledcAttachPin
+      int chn;
+        ledcWrite(chn = pin_to_channel[pin], value); // do not run ledcSetup and ledcAttachPin
 #else
         analogWrite(pin, value);
 #endif
