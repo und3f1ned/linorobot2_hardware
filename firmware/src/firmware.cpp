@@ -78,10 +78,13 @@ static inline void set_microros_net_transports(IPAddress agent_ip, uint16_t agen
 #define TOPIC_PREFIX
 #endif
 #ifndef CONTROL_TIMER
-#define CONTROL_TIMER 20
+#define CONTROL_TIMER 20 // 50Hz
 #endif
 #ifndef BATTERY_TIMER
-#define BATTERY_TIMER 2000
+#define BATTERY_TIMER 2000 // 2 sec
+#endif
+#ifndef RANGE_TIMER
+#define RANGE_TIMER 100 // 10Hz
 #endif
 
 #ifndef RCCHECK
@@ -115,8 +118,6 @@ rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
 rcl_timer_t control_timer;
-rcl_timer_t battery_timer;
-rcl_timer_t range_timer;
 
 unsigned long long time_offset = 0;
 unsigned long prev_cmd_time = 0;
@@ -281,19 +282,6 @@ struct timespec getTime()
     return tp;
 }
 
-void rangeCallback(rcl_timer_t * timer, int64_t last_call_time)
-{
-    RCLC_UNUSED(last_call_time);
-    if (timer != NULL)
-    {
-        range_msg = getRange();
-    struct timespec time_stamp = getTime();
-    range_msg.header.stamp.sec = time_stamp.tv_sec;
-    range_msg.header.stamp.nanosec = time_stamp.tv_nsec;
-    RCSOFTCHECK(rcl_publish(&range_publisher, &range_msg, NULL));
-    }
-}
-
 void twistCallback(const void * msgin)
 {
     digitalWrite(LED_PIN, !digitalRead(LED_PIN));
@@ -353,8 +341,15 @@ void publishData()
         battery_msg = getBattery();
         battery_msg.header.stamp.sec = time_stamp.tv_sec;
         battery_msg.header.stamp.nanosec = time_stamp.tv_nsec;
-    RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL)) });
+        RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL)) });
 #endif
+#endif
+#ifdef ECHO_PIN
+    EXECUTE_EVERY_N_MS(RANGE_TIMER, {
+        range_msg = getRange();
+        range_msg.header.stamp.sec = time_stamp.tv_sec;
+        range_msg.header.stamp.nanosec = time_stamp.tv_nsec;
+        RCSOFTCHECK(rcl_publish(&range_publisher, &range_msg, NULL)) });
 #endif
 }
 
@@ -436,16 +431,7 @@ bool createEntities()
         RCL_MS_TO_NS(control_timeout),
         controlCallback
     ));
-#ifdef ECHO_PIN
-    const unsigned int range_timer_timeout = 100;
-    RCCHECK(rclc_timer_init_default(
-        &range_timer,
-        &support,
-        RCL_MS_TO_NS(range_timer_timeout),
-        rangeCallback
-    ));
-#endif
-    RCCHECK(rclc_executor_init(&executor, &support.context, 3, & allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));
     RCCHECK(rclc_executor_add_subscription(
         &executor,
         &twist_subscriber,
@@ -454,9 +440,6 @@ bool createEntities()
         ON_NEW_DATA
     ));
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
-#ifdef ECHO_PIN
-    RCCHECK(rclc_executor_add_timer(&executor, &range_timer));
-#endif
 
     // synchronize time with the agent
     syncTime();
@@ -484,9 +467,6 @@ bool destroyEntities()
 #endif
     RCSOFTCHECK(rcl_subscription_fini(&twist_subscriber, &node));
     RCSOFTCHECK(rcl_timer_fini(&control_timer));
-#ifdef ECHO_PIN
-    RCSOFTCHECK(rcl_timer_fini(&range_timer));
-#endif
     RCSOFTCHECK(rclc_executor_fini(&executor));
     RCSOFTCHECK(rcl_node_fini(&node))
     RCSOFTCHECK(rclc_support_fini(&support));
