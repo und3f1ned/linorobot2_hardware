@@ -13,11 +13,9 @@
 // limitations under the License.
 #include <Arduino.h>
 #include <micro_ros_platformio.h>
-#include <stdio.h>
 #include <i2cdetect.h>
 
 #include <rcl/rcl.h>
-#include <rcl/error_handling.h>
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 
@@ -355,7 +353,7 @@ void publishData()
         battery_msg = getBattery();
         battery_msg.header.stamp.sec = time_stamp.tv_sec;
         battery_msg.header.stamp.nanosec = time_stamp.tv_nsec;
-    RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL)) }); 
+    RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL)) });
 #endif
 #endif
 }
@@ -447,7 +445,6 @@ bool createEntities()
         rangeCallback
     ));
 #endif
-    executor = rclc_executor_get_zero_initialized_executor();
     RCCHECK(rclc_executor_init(&executor, &support.context, 3, & allocator));
     RCCHECK(rclc_executor_add_subscription(
         &executor,
