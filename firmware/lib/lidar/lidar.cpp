@@ -49,12 +49,26 @@ void rx_callback(void)
   }
 }
 
+void poweronLidar(void)
+{
+#ifdef LIDAR_POWEROFF
+    digitalWrite(LIDAR_POWEROFF, LOW);
+#endif
+}
+
+void poweroffLidar(void)
+{
+#ifdef LIDAR_POWEROFF
+    digitalWrite(LIDAR_POWEROFF, HIGH);
+#endif
+}
+
 void initLidar(void) {
   pinMode(LIDAR_RXD, INPUT);
-#ifdef LIDAR_PWM
-  pinMode(LIDAR_PWM, OUTPUT);
-  analogWrite(LIDAR_PWM, 1 << PWM_BITS -1);
+#ifdef LIDAR_POWEROFF
+  pinMode(LIDAR_POWEROFF, OUTPUT);
 #endif
+  poweronLidar();
   comm.setRxBufferSize(1024);
   comm.onReceiveError(rx_err_callback);
   comm.onReceive(rx_callback);
@@ -62,5 +76,6 @@ void initLidar(void) {
 };
 #else
 void initLidar(void) {};
-void pushLidar(void) {};
+void poweronLidar(void) {};
+void poweroffLidar(void) {};
 #endif

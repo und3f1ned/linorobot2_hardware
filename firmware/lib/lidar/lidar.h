@@ -14,6 +14,8 @@
 #ifndef LIDAR_H
 #define LIDAR_H
 
+void poweronLidar(void);
+void poweroffLidar(void);
 void initLidar(void);
 
 #endif
