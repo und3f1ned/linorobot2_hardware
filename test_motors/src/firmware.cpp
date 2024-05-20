@@ -54,6 +54,29 @@ geometry_msgs__msg__Twist twist_msg;
 sensor_msgs__msg__BatteryState battery_msg;
 sensor_msgs__msg__Range range_msg;
 
+void setLed(int value)
+{
+#ifdef LED_PIN
+    digitalWrite(LED_PIN, value);
+#endif
+}
+
+int getLed(void)
+{
+#ifdef LED_PIN
+    return digitalRead(LED_PIN);
+#else
+    return 0;
+#endif
+}
+
+void initLed(void)
+{
+#ifdef LED_PIN
+    pinMode(LED_PIN, OUTPUT);
+#endif
+}
+
 Encoder motor1_encoder(MOTOR1_ENCODER_A, MOTOR1_ENCODER_B, COUNTS_PER_REV1, MOTOR1_ENCODER_INV);
 Encoder motor2_encoder(MOTOR2_ENCODER_A, MOTOR2_ENCODER_B, COUNTS_PER_REV2, MOTOR2_ENCODER_INV);
 Encoder motor3_encoder(MOTOR3_ENCODER_A, MOTOR3_ENCODER_B, COUNTS_PER_REV3, MOTOR3_ENCODER_INV);
@@ -87,7 +110,7 @@ unsigned total_motors = 4;
 void setup()
 {
     Serial.begin(BAUDRATE);
-    pinMode(LED_PIN, OUTPUT);
+    initLed();
 #ifdef BOARD_INIT // board specific setup
     BOARD_INIT;
 #endif
@@ -129,7 +152,7 @@ void loop() {
     const int pwm_max = (1 << PWM_BITS) - 1;
     static float max_rpm, stopping;
 
-    digitalWrite(LED_PIN, direction ? LOW : HIGH);
+    setLed(direction ? LOW : HIGH);
     motor1_controller.spin((current_motor == 0) ? (direction ? -pwm_max : pwm_max) : 0);
     motor2_controller.spin((current_motor == 1) ? (direction ? -pwm_max : pwm_max) : 0);
     motor3_controller.spin((current_motor == 2) ? (direction ? -pwm_max : pwm_max) : 0);

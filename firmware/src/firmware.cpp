@@ -29,6 +29,7 @@
 
 #include "config.h"
 #include "syslog.h"
+#include "led.h"
 #include "motor.h"
 #include "kinematics.h"
 #include "pid.h"
@@ -165,9 +166,9 @@ void flashLED(int n_times)
 {
     for(int i=0; i<n_times; i++)
     {
-        digitalWrite(LED_PIN, HIGH);
+        setLed(HIGH);
         delay(150);
-        digitalWrite(LED_PIN, LOW);
+        setLed(LOW);
         delay(150);
     }
     delay(1000);
@@ -202,8 +203,7 @@ void moveBase()
         twist_msg.linear.x = 0.0;
         twist_msg.linear.y = 0.0;
         twist_msg.angular.z = 0.0;
-
-        digitalWrite(LED_PIN, HIGH);
+        setLed(HIGH);
     }
     // get the required rpm for each motor based on required velocities, and base used
     Kinematics::rpm req_rpm = kinematics.getRPM(
@@ -284,7 +284,7 @@ struct timespec getTime()
 
 void twistCallback(const void * msgin)
 {
-    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+    setLed(!getLed());
 
     prev_cmd_time = millis();
 }
@@ -443,7 +443,7 @@ bool createEntities()
 
     // synchronize time with the agent
     syncTime();
-    digitalWrite(LED_PIN, HIGH);
+    setLed(HIGH);
 
     return true;
 }
@@ -471,7 +471,7 @@ bool destroyEntities()
     RCSOFTCHECK(rcl_node_fini(&node))
     RCSOFTCHECK(rclc_support_fini(&support));
 
-    digitalWrite(LED_PIN, HIGH);
+    setLed(HIGH);
 
     return true;
 }
@@ -479,7 +479,7 @@ bool destroyEntities()
 void setup()
 {
     Serial.begin(BAUDRATE);
-    pinMode(LED_PIN, OUTPUT);
+    initLed();
 #ifdef BOARD_INIT // board specific setup
     BOARD_INIT
 #endif

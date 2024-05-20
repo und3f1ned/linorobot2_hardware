@@ -60,7 +60,6 @@ MAG mag;
 void setup()
 {
     Serial.begin(BAUDRATE);
-    pinMode(LED_PIN, OUTPUT);
 #ifdef BOARD_INIT // board specific setup
     BOARD_INIT;
 #endif

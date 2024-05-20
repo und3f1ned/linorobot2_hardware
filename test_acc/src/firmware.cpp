@@ -55,6 +55,29 @@ geometry_msgs__msg__Twist twist_msg;
 sensor_msgs__msg__BatteryState battery_msg;
 sensor_msgs__msg__Range range_msg;
 
+void setLed(int value)
+{
+#ifdef LED_PIN
+    digitalWrite(LED_PIN, value);
+#endif
+}
+
+int getLed(void)
+{
+#ifdef LED_PIN
+    return digitalRead(LED_PIN);
+#else
+    return 0;
+#endif
+}
+
+void initLed(void)
+{
+#ifdef LED_PIN
+    pinMode(LED_PIN, OUTPUT);
+#endif
+}
+
 Encoder motor1_encoder(MOTOR1_ENCODER_A, MOTOR1_ENCODER_B, COUNTS_PER_REV1, MOTOR1_ENCODER_INV);
 Encoder motor2_encoder(MOTOR2_ENCODER_A, MOTOR2_ENCODER_B, COUNTS_PER_REV2, MOTOR2_ENCODER_INV);
 Encoder motor3_encoder(MOTOR3_ENCODER_A, MOTOR3_ENCODER_B, COUNTS_PER_REV3, MOTOR3_ENCODER_INV);
@@ -88,7 +111,7 @@ unsigned total_motors = 4;
 void setup()
 {
     Serial.begin(BAUDRATE);
-    pinMode(LED_PIN, OUTPUT);
+    initLed();
 #ifdef BOARD_INIT // board specific setup
     BOARD_INIT;
 #endif
@@ -247,28 +270,28 @@ void loop() {
         imu_max_acc_x = 0;
         imu_min_acc_x = 0;
         // full speed forward / spin counterclockwise
-        digitalWrite(LED_PIN, HIGH);
+        setLed(HIGH);
         motor1_controller.spin((runs & 1) ? pwm_max : pwm_min);
         motor2_controller.spin(pwm_max);
         motor3_controller.spin((runs & 1) ? pwm_max : pwm_min);
         motor4_controller.spin(pwm_max);
         record(run_time / ticks);
         // stop
-        digitalWrite(LED_PIN, LOW);
+        setLed(LOW);
         motor1_controller.spin(0);
         motor2_controller.spin(0);
         motor3_controller.spin(0);
         motor4_controller.spin(0);
         record(run_time / ticks);
         // full speed backward / spin clockwise
-        digitalWrite(LED_PIN, HIGH);
+        setLed(HIGH);
         motor1_controller.spin((runs & 1) ? pwm_min : pwm_max);
         motor2_controller.spin(pwm_min);
         motor3_controller.spin((runs & 1) ? pwm_min : pwm_max);
         motor4_controller.spin(pwm_min);
         record(run_time / ticks);
         // stop
-        digitalWrite(LED_PIN, LOW);
+        setLed(LOW);
         motor1_controller.spin(0);
         motor2_controller.spin(0);
         motor3_controller.spin(0);
