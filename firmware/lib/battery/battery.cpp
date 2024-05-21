@@ -36,7 +36,7 @@ void InaDataUpdate(){
 #else
 void initBattery() {
 #ifdef BATTERY_PIN
-  	analogReadResolution(12);
+    analogReadResolution(12);
 #endif
 }
 #endif
@@ -52,7 +52,8 @@ double readVoltage(int pin) {
 }
 #endif
 
-sensor_msgs__msg__BatteryState battery_msg_;
+sensor_msgs__msg__BatteryState battery_msg_ = { .current = NAN, .charge = NAN,
+    .capacity = NAN, .design_capacity = NAN, .percentage = NAN, .present =  true };
 sensor_msgs__msg__BatteryState getBattery()
 {
 #ifdef BATTERY_PIN
@@ -65,4 +66,45 @@ sensor_msgs__msg__BatteryState getBattery()
     battery_msg_.current = -current_mA / 1000; // Amp, minu when discharge
 #endif
     return battery_msg_;
+}
+
+/** https://github.com/rlogiacco/BatterySense/blob/master/Battery.h
+ *
+ * Symmetric sigmoidal approximation
+ * https://www.desmos.com/calculator/7m9lu26vpy
+ *
+ * c - c / (1 + k*x/v)^3
+ */
+static inline float sigmoidal(float voltage, float minVoltage, float maxVoltage) {
+    // slow
+    // float result = 110 - (110 / (1 + pow(1.468 * (voltage - minVoltage)/(maxVoltage - minVoltage), 6)));
+
+    // steep
+    // float result = 102 - (102 / (1 + pow(1.621 * (voltage - minVoltage)/(maxVoltage - minVoltage), 8.1)));
+
+    // normal
+    float result = 105 - (105 / (1 + pow(1.724 * (voltage - minVoltage)/(maxVoltage - minVoltage), 5.5)));
+    return result >= 100 ? 100 : result;
+}
+
+/**
+ * Asymmetric sigmoidal approximation
+ * https://www.desmos.com/calculator/oyhpsu8jnw
+ *
+ * c - c / [1 + (k*x/v)^4.5]^3
+ */
+static inline float asigmoidal(float voltage, float minVoltage, float maxVoltage) {
+    float result = 101 - (101 / pow(1 + pow(1.33 * (voltage - minVoltage)/(maxVoltage - minVoltage) ,4.5), 3));
+    return result >= 100 ? 100 : result;
+}
+
+void getBatteryPercentage(sensor_msgs__msg__BatteryState *msg)
+{
+#if defined(BATTERY_MIN) && defined(BATTERY_MAX)
+    msg->percentage = sigmoidal(msg->voltage, BATTERY_MIN, BATTERY_MAX) / 100;
+#ifdef BATTERY_CAP
+    msg->design_capacity = BATTERY_CAP;
+    msg->capacity = BATTERY_CAP * msg->percentage;
+#endif
+#endif
 }
