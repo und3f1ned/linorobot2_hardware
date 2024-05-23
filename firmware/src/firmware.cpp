@@ -289,6 +289,24 @@ void twistCallback(const void * msgin)
     prev_cmd_time = millis();
 }
 
+#ifdef ADDTWO_SERVICE
+#include <example_interfaces/srv/add_two_ints.h>
+
+rcl_service_t service;
+
+example_interfaces__srv__AddTwoInts_Response res;
+example_interfaces__srv__AddTwoInts_Request req;
+
+void service_callback(const void * req, void * res){
+  example_interfaces__srv__AddTwoInts_Request * req_in = (example_interfaces__srv__AddTwoInts_Request *) req;
+  example_interfaces__srv__AddTwoInts_Response * res_in = (example_interfaces__srv__AddTwoInts_Response *) res;
+
+  //printf("Service request value: %d + %d.\n", (int) req_in->a, (int) req_in->b);
+
+  res_in->sum = req_in->a + req_in->b;
+}
+#endif
+
 void publishData()
 {
     static unsigned skip_dip = 0;
@@ -419,6 +437,10 @@ bool createEntities()
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
         TOPIC_PREFIX "cmd_vel"
     ));
+#ifdef ADDTWO_SERVICE
+    // create service
+    RCCHECK(rclc_service_init_default(&service, &node, ROSIDL_GET_SRV_TYPE_SUPPORT(example_interfaces, srv, AddTwoInts), "/addtwoints"));
+#endif
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = CONTROL_TIMER;
     RCCHECK(rclc_timer_init_default(
@@ -427,7 +449,7 @@ bool createEntities()
         RCL_MS_TO_NS(control_timeout),
         controlCallback
     ));
-    RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
     RCCHECK(rclc_executor_add_subscription(
         &executor,
         &twist_subscriber,
@@ -435,6 +457,9 @@ bool createEntities()
         &twistCallback,
         ON_NEW_DATA
     ));
+#ifdef ADDTWO_SERVICE
+    RCCHECK(rclc_executor_add_service(&executor, &service, &req, &res, service_callback));
+#endif
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
 
     // synchronize time with the agent
@@ -462,6 +487,9 @@ bool destroyEntities()
     RCSOFTCHECK(rcl_publisher_fini(&range_publisher, &node));
 #endif
     RCSOFTCHECK(rcl_subscription_fini(&twist_subscriber, &node));
+#ifdef ADDTWO_SERVICE
+    RCSOFTCHECK(rcl_service_fini(&service, &node));
+#endif
     RCSOFTCHECK(rcl_timer_fini(&control_timer));
     RCSOFTCHECK(rclc_executor_fini(&executor));
     RCSOFTCHECK(rcl_node_fini(&node))
