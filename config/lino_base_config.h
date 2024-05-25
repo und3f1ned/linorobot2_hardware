@@ -40,6 +40,15 @@
 // #define USE_AK09918_MAG
 // #define USE_QMC5883L_MAG
 // #define MAG_BIAS { 0, 0, 0 }
+// #define IMU_TWEAK {}
+// #define MAG_TWEAK {}
+
+#define ACCEL_COV { 0.01, 0.01, 0.01 }
+#define GYRO_COV { 0.001, 0.001, 0.001 }
+#define ORI_COV { 0.01, 0.01, 0.01 }
+#define MAG_COV { 1e-12, 1e-12, 1e-12 }
+#define POSE_COV { 0.001, 0.001, 0.001, 0.001, 0.001, 0.001 }
+#define TWIST_COV { 0.001, 0.001, 0.001, 0.003, 0.003, 0.003 }
 
 #define K_P 0.6                             // P constant
 #define K_I 0.8                             // I constant
@@ -67,6 +76,8 @@ ROBOT ORIENTATION
 #define LR_WHEELS_DISTANCE 0.271            // distance between left and right wheels
 #define PWM_BITS 10                          // PWM Resolution of the microcontroller
 #define PWM_FREQUENCY 20000                 // PWM Frequency
+#define SERVO_BITS 12                       // Servo PWM resolution
+#define SERVO_FREQ 50                       // Servo PWM frequency
 
 // INVERT ENCODER COUNTS
 #define MOTOR1_ENCODER_INV false
@@ -202,22 +213,34 @@ ROBOT ORIENTATION
 // #define SCL_PIN 45
 #define NODE_NAME "linorobot_base_node"
 // #define TOPIC_PREFIX "myrobot/"
+// #define CONTROL_TIMER 20
+// #define BATTERY_TIMER 2000
 
 // battery voltage ADC pin
 // #define BATTERY_PIN 33
 // 3.3V ref, 12 bits ADC, 33k + 10k voltage divider
 #define BATTERY_ADJUST(v) ((v) * (3.3 / 4096 * (33 + 10) / 10))
 // #define USE_INA219
+#define BATTERY_DIP 0.98  // battery voltage drop alert
+// #define BATTERY_CAP 2.0  // battery capacity Ah
+// #define BATTERY_MIN 9.0  // battery minimal voltage
+// #define BATTERY_MAX 12.6 // battery maximum voltage
 // #define TRIG_PIN 31 // ultrasonic sensor HC-SR04
 // #define ECHO_PIN 32
 // #define USE_SHORT_BRAKE // for shorter stopping distance
 // #define WDT_TIMEOUT 30 // Sec
 // #define BOARD_INIT sleep(5) // wait to begin IMU calibration
+// #define BOARD_INIT_LATE {}
+// #define BOARD_LOOP {}
 
 #ifdef USE_SYSLOG
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){ \
     syslog(LOG_ERR, "%s RCCHECK failed %d", __FUNCTION__, temp_rc); \
     return false; }}
+#else
+#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){ \
+    flashLED(3); \
+    return false; }} // do not block
 #endif
 
 #endif
