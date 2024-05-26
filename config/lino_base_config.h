@@ -209,8 +209,8 @@ ROBOT ORIENTATION
 #define LIDAR_SERVER { 192, 168, 1, 100 }  // eg IP of the desktop computer
 #define LIDAR_PORT 8889
 // #define BAUDRATE 115200
-// #define SDA_PIN 44 // specify I2C pins
-// #define SCL_PIN 45
+// #define SDA_PIN 18 // specify I2C pins
+// #define SCL_PIN 19
 #define NODE_NAME "linorobot_base_node"
 // #define TOPIC_PREFIX "myrobot/"
 // #define CONTROL_TIMER 20
@@ -229,7 +229,7 @@ ROBOT ORIENTATION
 // #define ECHO_PIN 32
 // #define USE_SHORT_BRAKE // for shorter stopping distance
 // #define WDT_TIMEOUT 30 // Sec
-// #define BOARD_INIT sleep(5) // wait to begin IMU calibration
+#define BOARD_INIT { Wire.begin(); } // needed for i2cdetect
 // #define BOARD_INIT_LATE {}
 // #define BOARD_LOOP {}
 
