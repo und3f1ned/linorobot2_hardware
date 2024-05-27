@@ -476,8 +476,10 @@ void setup()
 {
     Serial.begin(BAUDRATE);
     initLed();
-#ifdef BOARD_INIT // board specific setup
+#ifdef BOARD_INIT // board specific setup, must include Wire.begin
     BOARD_INIT
+#else
+    Wire.begin();
 #endif
 
 #ifdef WDT_TIMEOUT

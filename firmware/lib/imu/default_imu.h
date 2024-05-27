@@ -27,7 +27,7 @@
 #include "MPU9250.h"
 #include "QMI8658.h"
 
-class GY85IMU: public IMUInterface 
+class GY85IMU: public IMUInterface
 {
     private:
         //constants specific to the sensor
@@ -53,7 +53,6 @@ class GY85IMU: public IMUInterface
         {
             // here you can override startSensor() function and use the sensor's driver API
             // to initialize and test the sensor's connection during boot time
-            Wire.begin();
             bool ret;
             accelerometer_.initialize();
             ret = accelerometer_.testConnection();
@@ -73,7 +72,7 @@ class GY85IMU: public IMUInterface
             // here you can override readAccelerometer function and use the sensor's driver API
             // to grab the data from accelerometer and return as a Vector3 object
             int16_t ax, ay, az;
-            
+
             accelerometer_.getAcceleration(&ax, &ay, &az);
 
             accel_.x = ax * (double) accel_scale_ * g_to_accel_;
@@ -100,7 +99,7 @@ class GY85IMU: public IMUInterface
 };
 
 
-class MPU6050IMU: public IMUInterface 
+class MPU6050IMU: public IMUInterface
 {
     private:
         const float accel_scale_ = 1 / 16384.0;
@@ -118,7 +117,6 @@ class MPU6050IMU: public IMUInterface
 
         bool startSensor() override
         {
-            Wire.begin();
             bool ret;
             accelgyro_.initialize();
             ret = accelgyro_.testConnection();
@@ -133,7 +131,7 @@ class MPU6050IMU: public IMUInterface
         geometry_msgs__msg__Vector3 readAccelerometer() override
         {
             int16_t ax, ay, az;
-            
+
             accelgyro_.getAcceleration(&ax, &ay, &az);
 
             accel_.x = ax * (double) accel_scale_ * g_to_accel_;
@@ -157,7 +155,7 @@ class MPU6050IMU: public IMUInterface
         }
 };
 
-class MPU9250IMU: public IMUInterface 
+class MPU9250IMU: public IMUInterface
 {
     private:
         const float accel_scale_ = 1 / 16384.0;
@@ -175,7 +173,6 @@ class MPU9250IMU: public IMUInterface
 
         bool startSensor() override
         {
-            Wire.begin();
             bool ret;
             accelgyro_.initialize();
             ret = accelgyro_.testConnection();
@@ -188,7 +185,7 @@ class MPU9250IMU: public IMUInterface
         geometry_msgs__msg__Vector3 readAccelerometer() override
         {
             int16_t ax, ay, az;
-            
+
             accelgyro_.getAcceleration(&ax, &ay, &az);
 
             accel_.x = ax * (double) accel_scale_ * g_to_accel_;
@@ -212,7 +209,7 @@ class MPU9250IMU: public IMUInterface
         }
 };
 
-class FakeIMU: public IMUInterface 
+class FakeIMU: public IMUInterface
 {
     private:
         geometry_msgs__msg__Vector3 accel_;
@@ -239,7 +236,7 @@ class FakeIMU: public IMUInterface
         }
 };
 
-class QMI8658IMU: public IMUInterface 
+class QMI8658IMU: public IMUInterface
 {
     private:
         QMI8658 qmi8658_;
@@ -254,17 +251,16 @@ class QMI8658IMU: public IMUInterface
 
         bool startSensor() override
         {
-            Wire.begin();
-	    if (qmi8658_.begin() == 0){
-	        // Serial.println("qmi8658_init fail");
-	        return false;
-	    }
-	    return true;
+            if (qmi8658_.begin() == 0){
+                // Serial.println("qmi8658_init fail");
+                return false;
+            }
+            return true;
         }
 
         geometry_msgs__msg__Vector3 readAccelerometer() override
         {
-	    float ac[3];
+            float ac[3];
             qmi8658_.read_acc(ac);
             accel_.x = ac[0];
             accel_.y = ac[1];
@@ -274,7 +270,7 @@ class QMI8658IMU: public IMUInterface
 
         geometry_msgs__msg__Vector3 readGyroscope() override
         {
-	    float gy[3];
+            float gy[3];
             qmi8658_.read_gyro(gy);
             gyro_.x = gy[0];
             gyro_.y = gy[1];

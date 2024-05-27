@@ -47,7 +47,6 @@ class HMC5883LMAG: public MAGInterface
         {
             // here you can override startSensor() function and use the sensor's driver API
             // to initialize and test the sensor's connection during boot time
-            Wire.begin();
             bool ret;
             magnetometer_.initialize();
             ret = magnetometer_.testConnection();
@@ -93,7 +92,6 @@ class AK8963MAG: public MAGInterface
         {
             // here you can override startSensor() function and use the sensor's driver API
             // to initialize and test the sensor's connection during boot time
-            Wire.begin();
             bool ret;
             magnetometer_.initialize();
             ret = magnetometer_.testConnection();
@@ -139,7 +137,6 @@ class AK8975MAG: public MAGInterface
         {
             // here you can override startSensor() function and use the sensor's driver API
             // to initialize and test the sensor's connection during boot time
-            Wire.begin();
             bool ret;
             magnetometer_.initialize();
             ret = magnetometer_.testConnection();
@@ -185,7 +182,6 @@ class AK09918MAG: public MAGInterface
         {
             // here you can override startSensor() function and use the sensor's driver API
             // to initialize and test the sensor's connection during boot time
-            Wire.begin();
             bool ret;
             ret = magnetometer_.initialize();
             if (ret)
@@ -230,7 +226,6 @@ class QMC5883LMAG: public MAGInterface
         {
             // here you can override startSensor() function and use the sensor's driver API
             // to initialize and test the sensor's connection during boot time
-            Wire.begin();
             compass.init();
             compass.setSamplingRate(200);
             compass.setRange(2);
@@ -245,7 +240,7 @@ class QMC5883LMAG: public MAGInterface
             // to grab the data from magnetometer and return as a Vector3 object
             int16_t ax, ay, az, tt;
 
-            compass.readRaw(&ax, &ay, &az, &tt); 
+            compass.readRaw(&ax, &ay, &az, &tt);
             mag_.x = ax * 0.0001 / 12000;
             mag_.y = ay * 0.0001 / 12000;
             mag_.z = az * 0.0001 / 12000;
