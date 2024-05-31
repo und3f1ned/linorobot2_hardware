@@ -107,20 +107,20 @@ ROBOT ORIENTATION
 // MOTOR PINS
 #ifdef USE_GENERIC_2_IN_MOTOR_DRIVER
   #define MOTOR1_PWM 19
-  #define MOTOR1_IN_A 0
-  #define MOTOR1_IN_B 5
+  #define MOTOR1_IN_A 5
+  #define MOTOR1_IN_B 15
 
   #define MOTOR2_PWM 18
-  #define MOTOR2_IN_A 15
+  #define MOTOR2_IN_A 13
   #define MOTOR2_IN_B 12
 
   #define MOTOR3_PWM 16
-  #define MOTOR3_IN_A 13
-  #define MOTOR3_IN_B 4
+  #define MOTOR3_IN_A 4
+  #define MOTOR3_IN_B 23
 
   #define MOTOR4_PWM 17
-  #define MOTOR4_IN_A 23
-  #define MOTOR4_IN_B 14
+  #define MOTOR4_IN_A 14 // CONFLICK with LIDAR_RXD 14, comment out LIDAR_RXD
+  #define MOTOR4_IN_B 2  // CONFLICK with LED_PIN 2, set LED_PIN to -1
 
   #define PWM_MAX pow(2, PWM_BITS) - 1
   #define PWM_MIN -PWM_MAX
@@ -128,15 +128,15 @@ ROBOT ORIENTATION
 
 #ifdef USE_GENERIC_1_IN_MOTOR_DRIVER
   #define MOTOR1_PWM 19
-  #define MOTOR1_IN_A 0
+  #define MOTOR1_IN_A 5
   #define MOTOR1_IN_B -1 //DON'T TOUCH THIS! This is just a placeholder
 
   #define MOTOR2_PWM 18
-  #define MOTOR2_IN_A 5
+  #define MOTOR2_IN_A 15
   #define MOTOR2_IN_B -1 //DON'T TOUCH THIS! This is just a placeholder
 
   #define MOTOR3_PWM 16
-  #define MOTOR3_IN_A 15
+  #define MOTOR3_IN_A 13
   #define MOTOR3_IN_B -1 //DON'T TOUCH THIS! This is just a placeholder
 
   #define MOTOR4_PWM 17
