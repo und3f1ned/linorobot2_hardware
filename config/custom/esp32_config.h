@@ -202,7 +202,6 @@ ROBOT ORIENTATION
 #define APP_NAME "hardware"
 // #define USE_LIDAR_UDP
 #define LIDAR_RXD 14
-// #define LIDAR_PWM 15
 #define LIDAR_SERIAL 1 // uart number
 #define LIDAR_BAUDRATE 230400
 #define LIDAR_SERVER { 192, 168, 1, 100 }  // eg IP of the desktop computer
