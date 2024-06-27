@@ -289,24 +289,6 @@ void twistCallback(const void * msgin)
     prev_cmd_time = millis();
 }
 
-#ifdef ADDTWO_SERVICE
-#include <example_interfaces/srv/add_two_ints.h>
-
-rcl_service_t service;
-
-example_interfaces__srv__AddTwoInts_Response res;
-example_interfaces__srv__AddTwoInts_Request req;
-
-void service_callback(const void * req, void * res){
-  example_interfaces__srv__AddTwoInts_Request * req_in = (example_interfaces__srv__AddTwoInts_Request *) req;
-  example_interfaces__srv__AddTwoInts_Response * res_in = (example_interfaces__srv__AddTwoInts_Response *) res;
-
-  //printf("Service request value: %d + %d.\n", (int) req_in->a, (int) req_in->b);
-
-  res_in->sum = req_in->a + req_in->b;
-}
-#endif
-
 void publishData()
 {
     static unsigned skip_dip = 0;
@@ -367,95 +349,6 @@ void publishData()
 #endif
 }
 
-#ifdef FIBONACCI_SERVER
-#include <example_interfaces/action/fibonacci.h>
-
-rclc_action_server_t action_server;
-example_interfaces__action__Fibonacci_SendGoal_Request ros_goal_request[10];
-
-/* const char * goalResult[] =
-{[GOAL_STATE_SUCCEEDED] = "succeeded", [GOAL_STATE_CANCELED] = "canceled",
-  [GOAL_STATE_ABORTED] = "aborted"};
-*/
-
-void * fibonacci_worker(void * args)
-{
-  (void) args;
-  rclc_action_goal_handle_t * goal_handle = (rclc_action_goal_handle_t *) args;
-  rcl_action_goal_state_t goal_state;
-  example_interfaces__action__Fibonacci_SendGoal_Request * req =
-      (example_interfaces__action__Fibonacci_SendGoal_Request *) goal_handle->ros_goal_request;
-
-  example_interfaces__action__Fibonacci_GetResult_Response response = {0};
-  example_interfaces__action__Fibonacci_FeedbackMessage feedback;
-
-  if (req->goal.order < 2) {
-    goal_state = GOAL_STATE_ABORTED;
-  } else {
-    feedback.feedback.sequence.capacity = req->goal.order;
-    feedback.feedback.sequence.size = 0;
-    feedback.feedback.sequence.data =
-      (int32_t *) malloc(feedback.feedback.sequence.capacity * sizeof(int32_t));
-
-    feedback.feedback.sequence.data[0] = 0;
-    feedback.feedback.sequence.data[1] = 1;
-    feedback.feedback.sequence.size = 2;
-
-    for (size_t i = 2; i < (size_t) req->goal.order && !goal_handle->goal_cancelled; i++) {
-      feedback.feedback.sequence.data[i] = feedback.feedback.sequence.data[i - 1] +
-        feedback.feedback.sequence.data[i - 2];
-      feedback.feedback.sequence.size++;
-
-      rclc_action_publish_feedback(goal_handle, &feedback);
-      // usleep(500000);
-    }
-
-    if (!goal_handle->goal_cancelled) {
-      response.result.sequence.capacity = feedback.feedback.sequence.capacity;
-      response.result.sequence.size = feedback.feedback.sequence.size;
-      response.result.sequence.data = feedback.feedback.sequence.data;
-      goal_state = GOAL_STATE_SUCCEEDED;
-    } else {
-      goal_state = GOAL_STATE_CANCELED;
-    }
-  }
-
-  rcl_ret_t rc;
-  do {
-    rc = rclc_action_send_result(goal_handle, goal_state, &response);
-    usleep(1e6);
-  } while (rc != RCL_RET_OK);
-
-  free(feedback.feedback.sequence.data);
-  pthread_exit(NULL);
-}
-
-rcl_ret_t handle_goal(rclc_action_goal_handle_t * goal_handle, void * context)
-{
-  (void) context;
-
-  example_interfaces__action__Fibonacci_SendGoal_Request * req =
-    (example_interfaces__action__Fibonacci_SendGoal_Request *) goal_handle->ros_goal_request;
-
-  // Too big, rejecting
-  if (req->goal.order > 200) {
-    return RCL_RET_ACTION_GOAL_REJECTED;
-  }
-
-  pthread_t * thread_id = (pthread_t *)malloc(sizeof(pthread_t));
-  pthread_create(thread_id, NULL, fibonacci_worker, goal_handle);
-  return RCL_RET_ACTION_GOAL_ACCEPTED;
-}
-
-bool handle_cancel(rclc_action_goal_handle_t * goal_handle, void * context)
-{
-  (void) context;
-  (void) goal_handle;
-
-  return true;
-}
-#endif
-
 void controlCallback(rcl_timer_t * timer, int64_t last_call_time)
 {
     RCLC_UNUSED(last_call_time);
@@ -474,16 +367,6 @@ bool createEntities()
     RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
     // create node
     RCCHECK(rclc_node_init_default(&node, NODE_NAME, "", &support));
-#ifdef FIBONACCI_SERVER
-    // create action server
-    RCCHECK(rclc_action_server_init_default(
-        &action_server,
-        &node,
-        &support,
-        ROSIDL_GET_ACTION_TYPE_SUPPORT(example_interfaces, Fibonacci),
-        "fibonacci"
-    ));
-#endif
     // create odometry publisher
     RCCHECK(rclc_publisher_init_default(
         &odom_publisher,
@@ -536,10 +419,6 @@ bool createEntities()
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
         TOPIC_PREFIX "cmd_vel"
     ));
-#ifdef ADDTWO_SERVICE
-    // create service
-    RCCHECK(rclc_service_init_default(&service, &node, ROSIDL_GET_SRV_TYPE_SUPPORT(example_interfaces, srv, AddTwoInts), "/addtwoints"));
-#endif
     // create timer for actuating the motors at 50 Hz (1000/20)
     const unsigned int control_timeout = CONTROL_TIMER;
     RCCHECK(rclc_timer_init_default(
@@ -548,7 +427,7 @@ bool createEntities()
         RCL_MS_TO_NS(control_timeout),
         controlCallback
     ));
-    RCCHECK(rclc_executor_init(&executor, &support.context, 4, &allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));
     RCCHECK(rclc_executor_add_subscription(
         &executor,
         &twist_subscriber,
@@ -556,23 +435,7 @@ bool createEntities()
         &twistCallback,
         ON_NEW_DATA
     ));
-#ifdef ADDTWO_SERVICE
-    RCCHECK(rclc_executor_add_service(&executor, &service, &req, &res, service_callback));
-#endif
     RCCHECK(rclc_executor_add_timer(&executor, &control_timer));
-#ifdef FIBONACCI_SERVER
-    syslog(LOG_INFO, "req size %d", sizeof(example_interfaces__action__Fibonacci_SendGoal_Request));
-    RCCHECK(rclc_executor_add_action_server(
-        &executor,
-        &action_server,
-        10,
-        ros_goal_request,
-        sizeof(example_interfaces__action__Fibonacci_SendGoal_Request),
-        handle_goal,
-        handle_cancel,
-        (void *) &action_server
-    ));
-#endif
 
     // synchronize time with the agent
     syncTime();
@@ -587,9 +450,6 @@ bool destroyEntities()
     rmw_context_t * rmw_context = rcl_context_get_rmw_context(&support.context);
     (void) rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
-#ifdef FIBONACCI_SERVER
-    RCSOFTCHECK(rclc_action_server_fini(&action_server, &node));
-#endif
     RCSOFTCHECK(rcl_publisher_fini(&odom_publisher, &node));
     RCSOFTCHECK(rcl_publisher_fini(&imu_publisher, &node));
 #ifndef USE_FAKE_MAG
@@ -602,9 +462,6 @@ bool destroyEntities()
     RCSOFTCHECK(rcl_publisher_fini(&range_publisher, &node));
 #endif
     RCSOFTCHECK(rcl_subscription_fini(&twist_subscriber, &node));
-#ifdef ADDTWO_SERVICE
-    RCSOFTCHECK(rcl_service_fini(&service, &node));
-#endif
     RCSOFTCHECK(rcl_timer_fini(&control_timer));
     RCSOFTCHECK(rclc_executor_fini(&executor));
     RCSOFTCHECK(rcl_node_fini(&node))
