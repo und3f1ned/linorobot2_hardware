@@ -409,7 +409,7 @@ bool createEntities()
     &range_publisher,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Range),
-    TOPIC_PREFIX "ultrasound"
+    TOPIC_PREFIX "sonar"
     ));
 #endif
     // create twist command subscriber

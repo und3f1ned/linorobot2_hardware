@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <micro_ros_utilities/string_utilities.h>
 #include <sensor_msgs/msg/range.h>
 #include "config.h"
 
@@ -33,6 +34,7 @@ sensor_msgs__msg__Range getRange()
 void initRange()
 {
 #ifdef TRIG_PIN // ultrasonic sensor HC-SR04
+    range_msg_.header.frame_id = micro_ros_string_utilities_set(range_msg_.header.frame_id, "sonar_link");
     pinMode(TRIG_PIN, OUTPUT);
 #endif
 }
