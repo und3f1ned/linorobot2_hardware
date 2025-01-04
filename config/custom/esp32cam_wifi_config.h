@@ -116,6 +116,7 @@
 #define SCL_PIN 15
 #define NODE_NAME "esp32cam_wifi"
 
+#define ECHO_PIN
 // #define BATTERY_PIN 33
 // #ifdef USE_ADC_LUT
 // const int16_t ADC_LUT[4096] = {};

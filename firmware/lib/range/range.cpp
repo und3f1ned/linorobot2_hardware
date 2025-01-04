@@ -9,7 +9,7 @@ TFMiniI2C::TFMiniI2C() {}
 
 bool TFMiniI2C::init() {
   // Initialize I2Cdev
-  i2c_dev.initialize();
+  // i2c_dev.initialize();
 
   // Configure range message
   range_msg_.header.frame_id =
@@ -21,7 +21,7 @@ bool TFMiniI2C::init() {
 
   // Test connection
   uint8_t test_data;
-  return i2c_dev.readByte(TFMINI_I2C_ADDR, 0x00, &test_data);
+  return I2Cdev::readByte(TFMINI_I2C_ADDR, 0x00, &test_data);
 }
 
 uint16_t TFMiniI2C::getDistance() {

@@ -25,6 +25,10 @@ private:
   const float MAX_RANGE = 12.00;     // 12m
 };
 
+void initRange();
+
+sensor_msgs__msg__Range getRange();
+
 extern TFMiniI2C tfmini;
 
 #endif
